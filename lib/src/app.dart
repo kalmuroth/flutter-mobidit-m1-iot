@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-import 'sample_feature/register.dart';
-import 'sample_feature/login.dart';
+import 'pages/register.dart';
+import 'pages/login.dart';
 import 'settings/settings_controller.dart';
 import 'settings/settings_view.dart';
 
