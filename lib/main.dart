@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'post.dart';
+import 'src/pages/post.dart';
 
 import 'src/app.dart';
 import 'src/settings/settings_controller.dart';
