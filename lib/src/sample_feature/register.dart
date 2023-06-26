@@ -1,29 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-/// Displays detailed information about a SampleItem.
-/* class SampleItemDetailsView extends StatelessWidget {
-  const SampleItemDetailsView({super.key});
 
-  static const routeName = '/sample_item';
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Item Details'),
-      ),
-      body: const Center(
-        child: Text('More Information Here'),
-      ),
-    );
-  }
-}
- */
-
-
-class SampleItemDetailsView extends StatelessWidget {
-   const SampleItemDetailsView({super.key});
+class Register extends StatelessWidget {
+   const Register({super.key});
 
   static const routeName = '/register';
   @override
@@ -47,6 +27,7 @@ class RegistrationForm extends StatefulWidget {
   const RegistrationForm({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _RegistrationFormState createState() => _RegistrationFormState();
 }
 
