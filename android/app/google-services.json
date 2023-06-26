@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "193551739453",
+    "project_id": "flutter-mobidit-m1-iot",
+    "storage_bucket": "flutter-mobidit-m1-iot.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:193551739453:android:065be07a48d6902d589854",
+        "android_client_info": {
+          "package_name": "com.fluttermobiditm1iot.flutter_mobidit_m1_iot"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "193551739453-5bj261vjnjgdqkdg8rnfhc4ile2kldm8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB2lpNGel8VgbZqYefVP7X1FBavHNnCdMQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "193551739453-5bj261vjnjgdqkdg8rnfhc4ile2kldm8.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "193551739453-f5nqclf2u3jj9e5ov8sgitj7ktk0c38r.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.fluttermobiditm1iot.flutterMobiditM1Iot"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
