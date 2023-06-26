@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
 class RedditApp extends StatelessWidget {
+  const RedditApp({super.key});
+
+  static const routeName = '/home';
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Reddit',
+      title: 'Homme',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
