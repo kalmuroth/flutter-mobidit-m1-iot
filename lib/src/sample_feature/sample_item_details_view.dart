@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 /// Displays detailed information about a SampleItem.
@@ -70,7 +71,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
                   padding: EdgeInsets.all(40.0),
                   child: Text(
                   'Register to your account',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                             ),
                 ),
               Padding(
@@ -147,12 +148,29 @@ class _RegistrationFormState extends State<RegistrationForm> {
               Padding(
                 padding: const EdgeInsets.all(30.0),
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     if (_formKey.currentState!.validate()) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Processing Data')),
+                        
                       );
+                                          try {
+   await FirebaseAuth.instance.createUserWithEmailAndPassword(
+    email: _emailController.text,
+    password: _passwordController.text,
+  );
+} on FirebaseAuthException catch (e) {
+  if (e.code == 'weak-password') {
+    print('The password provided is too weak.');
+  } else if (e.code == 'email-already-in-use') {
+    print('The account already exists for that email.');
+  }
+} catch (e) {
+  print(e);
+}
+                      
                     }
+
                   },
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.white, backgroundColor: Colors.blue,
