@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_mobidit_m1_iot/src/pages/AddPost.dart';
 import 'package:flutter_mobidit_m1_iot/src/pages/login.dart';
 
 class Posts extends StatelessWidget {
@@ -90,17 +91,26 @@ class _RedditHomePageState extends State<RedditHomePage> {
                   ),
                 );
               } else {
-                return ElevatedButton(
-                  onPressed: () async {
-                    await FirebaseAuth.instance.signOut();
-                  },
-                  child: Text(
-                    'Logout',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16.0,
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment
+                      .spaceEvenly, // for evenly space between buttons
+                  children: <Widget>[
+                    ElevatedButton(
+                      onPressed: () {
+                         Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AddPostPage()),
+                    );
+                      },
+                      child: Text('Add Post'),
                     ),
-                  ),
+                    ElevatedButton(
+                      onPressed: () async {
+                        await FirebaseAuth.instance.signOut();
+                      },
+                      child: Text('Logout'),
+                    ),
+                  ],
                 );
               }
             },
@@ -130,7 +140,8 @@ class _RedditHomePageState extends State<RedditHomePage> {
               itemCount: posts.length,
               itemBuilder: (context, index) {
                 final post = posts[index];
-                if (selectedCategory.isNotEmpty && post.category != selectedCategory) {
+                if (selectedCategory.isNotEmpty &&
+                    post.category != selectedCategory) {
                   return Container();
                 }
                 return GestureDetector(
@@ -167,7 +178,9 @@ class _RedditHomePageState extends State<RedditHomePage> {
                             children: [
                               IconButton(
                                 icon: Icon(
-                                  post.isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
+                                  post.isLiked
+                                      ? Icons.thumb_up
+                                      : Icons.thumb_up_outlined,
                                   color: post.isLiked ? Colors.blue : null,
                                 ),
                                 onPressed: () {
@@ -291,7 +304,9 @@ class _PostDetailPageState extends State<PostDetailPage> {
               children: [
                 IconButton(
                   icon: Icon(
-                    widget.post.isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
+                    widget.post.isLiked
+                        ? Icons.thumb_up
+                        : Icons.thumb_up_outlined,
                     color: widget.post.isLiked ? Colors.blue : null,
                   ),
                   onPressed: () {
