@@ -78,7 +78,7 @@ class MyApp extends StatelessWidget {
                     return const Posts();  
                     
                   default:
-                    return const Login();
+                    return const Posts();
                 }
               },
             );
