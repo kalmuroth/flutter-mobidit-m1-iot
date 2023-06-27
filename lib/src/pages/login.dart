@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobidit_m1_iot/src/pages/post.dart';
@@ -132,11 +134,23 @@ class _LoginFormState extends State<LoginForm> {
                                   builder: (context) => const Login()));
                         }
                       } on FirebaseAuthException catch (e) {
-                        print(e);
-                           ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Invalid email or password')),
+  if (e.code == 'user-not-found') {
+    ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('user not found')),
+                        
                       );
-                      }
+  } else if (e.code == 'wrong-password') {
+     ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Wrong password')),
+                        
+                      );
+  }else {
+     ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Email or password incorrect!')),
+                        
+                      );
+  }
+}
                     }
                   },
                   style: ElevatedButton.styleFrom(

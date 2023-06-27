@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_mobidit_m1_iot/src/pages/login.dart';
 
 class Posts extends StatelessWidget {
   const Posts({super.key});
@@ -62,6 +64,27 @@ class _RedditHomePageState extends State<RedditHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Reddit'),
+          actions: [
+    ElevatedButton(
+      onPressed: (
+
+      ) async {
+        // Add logout logic here
+        await FirebaseAuth.instance.signOut();
+        Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const Login()));
+      },
+      child: Text(
+        'Logout',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 16.0,
+        ),
+      ),
+    ),
+  ],
       ),
       body: Column(
         children: [
