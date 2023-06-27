@@ -74,8 +74,8 @@ class MyApp extends StatelessWidget {
                     return const Register();
                   case Login.routeName:
                     return const Login();
-                  case RedditApp.routeName:
-                    return const RedditApp();  
+                  case Posts.routeName:
+                    return const Posts();  
                     
                   default:
                     return const Login();

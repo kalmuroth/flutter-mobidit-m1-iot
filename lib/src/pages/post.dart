@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class RedditApp extends StatelessWidget {
-  const RedditApp({super.key});
+class Posts extends StatelessWidget {
+  const Posts({super.key});
 
   static const routeName = '/home';
   @override

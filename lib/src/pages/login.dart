@@ -117,6 +117,7 @@ class _LoginFormState extends State<LoginForm> {
     email: _emailController.text,
     password: _passwordController.text,
   );
+  print(credential);
 } on FirebaseAuthException catch (e) {
   if (e.code == 'user-not-found') {
     print('No user found for that email.');
@@ -124,7 +125,7 @@ class _LoginFormState extends State<LoginForm> {
     print('Wrong password provided for that user.');
   }
 }
-                      
+                   
                     }
 
                   },
