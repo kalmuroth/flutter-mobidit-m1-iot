@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_mobidit_m1_iot/src/pages/login.dart';
 
 
 class Register extends StatelessWidget {
@@ -160,6 +161,15 @@ class _RegistrationFormState extends State<RegistrationForm> {
                   child: const Text('Register'),
                 ),
               ),
+                   TextButton(
+              child: const Text('You already have an account? Login here.'),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const Login()),
+                );
+              },
+            ),
             ],
           ),
         ),
