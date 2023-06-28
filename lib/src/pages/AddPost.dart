@@ -1,11 +1,9 @@
-
 // ignore_for_file: prefer_const_constructors
-
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_mobidit_m1_iot/src/pages/post.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:typed_data'; // Needed for Uint8List
@@ -44,21 +42,18 @@ class _AddPostPageState extends State<AddPostPage> {
     }
   }
 
-
   Future getImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
 
     setState(() {
       if (pickedFile != null) {
         _image = pickedFile;
-
         _loadImageBytes(pickedFile); // Load the image bytes
       } else {
         print('No image selected.');
       }
     });
   }
-
 
   // Reads the bytes of the image file and updates _imageBytes
   Future<void> _loadImageBytes(XFile image) async {
@@ -91,7 +86,6 @@ class _AddPostPageState extends State<AddPostPage> {
 
   String selectedCategory = '';
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -102,22 +96,6 @@ class _AddPostPageState extends State<AddPostPage> {
         padding: EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextFormField(
-              decoration: InputDecoration(labelText: 'Category'),
-            ),
-            SizedBox(height: 16.0),
-            TextFormField(
-              decoration: InputDecoration(labelText: 'Title'),
-            ),
-            SizedBox(height: 16.0),
-            TextFormField(
-              decoration: InputDecoration(labelText: 'Text'),
-              maxLines: null, // Allow multiple lines of text
-            ),
-            SizedBox(height: 16.0),
-            _image == null
-              ? Text('No image selected.')
-              : Image.file(File(_image!.path)),
             Padding(
               padding: EdgeInsets.all(10.0),
               child: DropdownButtonFormField<String>(
@@ -146,14 +124,12 @@ class _AddPostPageState extends State<AddPostPage> {
             _imageBytes == null
               ? Text('No image selected.')
               : Image.memory(_imageBytes!),
-
             TextButton(
               onPressed: getImage,
               child: Text('Pick Image'),
             ),
             SizedBox(height: 16.0),
             ElevatedButton(
-
               onPressed: () async {
                 String title = _titleController.text;
                 String text = _textController.text;
@@ -195,5 +171,4 @@ class _AddPostPageState extends State<AddPostPage> {
 
     return dropdownItems;
   }
-
 }
