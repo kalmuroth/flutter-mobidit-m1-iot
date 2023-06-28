@@ -1,6 +1,8 @@
 
 // ignore_for_file: prefer_const_constructors
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_mobidit_m1_iot/src/pages/post.dart';
 import 'package:image_picker/image_picker.dart';
