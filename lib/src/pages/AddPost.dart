@@ -1,12 +1,16 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, prefer_const_declarations
 
 import 'package:flutter/material.dart';
+import 'package:flutter_mobidit_m1_iot/src/model/postModel.dart';
 import 'package:flutter_mobidit_m1_iot/src/pages/post.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:typed_data'; // Needed for Uint8List
+import 'package:flutter/material.dart';
+import '../model/postModel.dart';
+import '../services/dbService.dart';
+
 
 class AddPostPage extends StatefulWidget {
   const AddPostPage({Key? key}) : super(key: key);
@@ -23,6 +27,26 @@ class _AddPostPageState extends State<AddPostPage> {
   Uint8List? _imageBytes;
   final _titleController = TextEditingController();
   final _textController = TextEditingController();
+  final DatabaseService postService = DatabaseService();
+  List<Post> posts = [];
+   String selectedCategory = '';
+
+  @override
+  void initState() {
+    super.initState();
+    fetchPosts();
+  }
+
+  Future<void> fetchPosts() async {
+    try {
+      List<Post> fetchedPosts = await postService.getAllPost();
+      setState(() {
+        posts = fetchedPosts;
+      });
+    } catch (e) {
+      print('$e');
+    }
+  }
 
   Future<void> addPost(String title, String text, String category, String imagePath) async {
     final url = 'https://europe-west2-flutter-mobidit-m1-iot.cloudfunctions.net/post';
@@ -60,13 +84,20 @@ class _AddPostPageState extends State<AddPostPage> {
     _imageBytes = await image.readAsBytes();
   }
 
-  final List<Post> posts = [
+
+
+
+
+
+
+
+/*   final List<Post> posts = [
     Post(
       author: 'John Doe',
       like: 10,
       title: 'First Post',
       content: 'This is the content of the first post.',
-      category: 'Category A',
+      category: 'Category A', comments: '',
     ),
     Post(
       author: 'Jane Smith',
@@ -82,9 +113,9 @@ class _AddPostPageState extends State<AddPostPage> {
       content: 'This is the content of the third post.',
       category: 'Category A',
     ),
-  ];
+  ]; */
 
-  String selectedCategory = '';
+
 
   @override
   Widget build(BuildContext context) {
@@ -96,22 +127,22 @@ class _AddPostPageState extends State<AddPostPage> {
         padding: EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Padding(
-              padding: EdgeInsets.all(10.0),
-              child: DropdownButtonFormField<String>(
-                value: selectedCategory,
-                onChanged: (newValue) {
-                  setState(() {
-                    selectedCategory = newValue!;
-                  });
-                },
-                items: getCategoriesDropdownItems(),
-                decoration: InputDecoration(
-                  labelText: 'Category',
-                  border: OutlineInputBorder(),
-                ),
+              Padding(
+            padding: EdgeInsets.all(10.0),
+            child: DropdownButtonFormField<String>(
+              value: selectedCategory,
+              onChanged: (newValue) {
+                setState(() {
+                  selectedCategory = newValue!;
+                });
+              },
+              items: getCategoriesDropdownItems(),
+              decoration: InputDecoration(
+                labelText: 'Category',
+                border: OutlineInputBorder(),
               ),
             ),
+          ),
             TextFormField(
               controller: _titleController,
               decoration: InputDecoration(labelText: 'Title'),
@@ -153,12 +184,12 @@ class _AddPostPageState extends State<AddPostPage> {
   List<DropdownMenuItem<String>> getCategoriesDropdownItems() {
     Set<String> categoriesSet = Set<String>();
     for (var post in posts) {
-      categoriesSet.add(post.category);
+      categoriesSet.add(post.id_category);
     }
 
     List<DropdownMenuItem<String>> dropdownItems = [];
     dropdownItems.add(DropdownMenuItem<String>(
-      value: '',
+      value: '', 
       child: Text('All'),
     ));
 
