@@ -19,6 +19,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   image_picker: ^1.0.0
+  http: ^0.13.3
 
 dev_dependencies:
   flutter_test:
