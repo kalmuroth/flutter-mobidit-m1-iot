@@ -1,15 +1,11 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_mobidit_m1_iot/src/pages/AddPost.dart';
-import 'package:flutter_mobidit_m1_iot/src/pages/login.dart';
 import '../model/postModel.dart';
 import '../services/dbService.dart';
 
 class Posts extends StatelessWidget {
-  const Posts({Key? key});
+  const Posts({super.key});
 
   static const routeName = '/home';
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -66,56 +62,6 @@ class _RedditHomePageState extends State<RedditHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Reddit'),
-        actions: [
-          StreamBuilder<User?>(
-            stream: FirebaseAuth.instance.authStateChanges(),
-            builder: (BuildContext context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Container(); // Return an empty container while waiting for the auth state
-              }
-              final user = snapshot.data;
-              if (user == null) {
-                return ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const Login()),
-                    );
-                  },
-                  child: Text(
-                    'Login',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16.0,
-                    ),
-                  ),
-                );
-              } else {
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment
-                      .spaceEvenly, // for evenly space between buttons
-                  children: <Widget>[
-                    ElevatedButton(
-                      onPressed: () {
-                         Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const AddPostPage()),
-                    );
-                      },
-                      child: Text('Add Post'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () async {
-                        await FirebaseAuth.instance.signOut();
-                      },
-                      child: Text('Logout'),
-                    ),
-                  ],
-                );
-              }
-            },
-          ),
-        ],
       ),
       body: Column(
         children: [
@@ -139,10 +85,9 @@ class _RedditHomePageState extends State<RedditHomePage> {
             child: ListView.builder(
               itemCount: posts.length,
               itemBuilder: (context, index) {
-                final post = posts[index];
-                if (selectedCategory.isNotEmpty &&
-                    post.category != selectedCategory) {
-                  return Container();
+                Post post = posts[index];
+                if (selectedCategory.isNotEmpty && post.id_category != selectedCategory) {
+                  return Container(); 
                 }
                 return GestureDetector(
                   onTap: () {
@@ -178,9 +123,7 @@ class _RedditHomePageState extends State<RedditHomePage> {
                             children: [
                               IconButton(
                                 icon: Icon(
-                                  post.isLiked
-                                      ? Icons.thumb_up
-                                      : Icons.thumb_up_outlined,
+                                  post.isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
                                   color: post.isLiked ? Colors.blue : null,
                                 ),
                                 onPressed: () {
@@ -321,7 +264,7 @@ class _RedditHomePageState extends State<RedditHomePage> {
 
     List<DropdownMenuItem<String>> dropdownItems = [];
     dropdownItems.add(DropdownMenuItem<String>(
-      value: '',
+      value: '', 
       child: Text('All'),
     ));
 
@@ -354,11 +297,13 @@ class PostDetailPage extends StatefulWidget {
 }
 
 class _PostDetailPageState extends State<PostDetailPage> {
+
   final TextEditingController commentController = TextEditingController();
   List<Comment> comments = [];
 
   @override
   void dispose() {
+
     commentController.dispose();
     super.dispose();
   }
@@ -391,9 +336,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
               children: [
                 IconButton(
                   icon: Icon(
-                    widget.post.isLiked
-                        ? Icons.thumb_up
-                        : Icons.thumb_up_outlined,
+                    widget.post.isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
                     color: widget.post.isLiked ? Colors.blue : null,
                   ),
                   onPressed: () {
@@ -452,11 +395,9 @@ class _PostDetailPageState extends State<PostDetailPage> {
             ElevatedButton(
               onPressed: () {
                 setState(() {
-                  comments.add(
-                    Comment(
-                      content: commentController.text,
-                    ),
-                  );
+                  comments.add(Comment(
+                    content: commentController.text,
+                  ));
                   commentController.clear();
                 });
               },
