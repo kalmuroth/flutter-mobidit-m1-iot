@@ -32,13 +32,28 @@ class _AddPostPageState extends State<AddPostPage> {
   String selectedCategory = '';
   String selectedCategoryId = '';
   List<Map<String, dynamic>> categories = [];
-  String idUser = "";
+  String idUser = '';
+  FirebaseAuth _auth = FirebaseAuth.instance;
 
-  @override
-  void initState() {
-    super.initState();
-    fetchPosts();
+/*     @override
+    void initState() {
+      super.initState();
+      idUser = _auth.currentUser!.uid;  // Here you get the uid of the current user
+      fetchPosts();
+    }
+ */
+
+@override
+void initState() {
+  super.initState();
+  if (_auth.currentUser != null) {
+    idUser = _auth.currentUser!.uid;  // Here you get the uid of the current user
+  } else {
+    // handle case where no user is signed in.
   }
+  fetchPosts();
+}
+
 
 
   Future<void> fetchPosts() async {
