@@ -8,6 +8,7 @@ class Post {
   final String comments;
   bool isLiked;
 
+
   Post({
     required this.id_user,
     required this.like,
@@ -17,6 +18,7 @@ class Post {
     required this.photo,
     required this.comments,
     this.isLiked = false,
+  
   });
 
   factory Post.fromJson(Map<String, dynamic> json) {
@@ -40,6 +42,7 @@ class Post {
       id_category: tab['id_category'],
       photo: tab['photo'],
       comments: comments,
+   
     );
 
     return post;
