@@ -1,11 +1,14 @@
 // ignore_for_file: prefer_const_constructors
 
+import 'dart:convert';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobidit_m1_iot/src/pages/AddPost.dart';
 import 'package:flutter_mobidit_m1_iot/src/pages/login.dart';
 import '../model/postModel.dart';
 import '../services/dbService.dart';
+import 'package:http/http.dart' as http;
 
 class Posts extends StatelessWidget {
   const Posts({super.key});
@@ -51,6 +54,10 @@ class _RedditHomePageState extends State<RedditHomePage> {
       print('$e');
     }
   }
+
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -171,6 +178,26 @@ class _RedditHomePageState extends State<RedditHomePage> {
                                   style: TextStyle(fontSize: 16.0),
                                 ),
                                 SizedBox(height: 12.0),
+                                Image.network(
+  post.photo,   // use Image.network to load image from network
+  fit: BoxFit.cover,      // use BoxFit.cover to maintain the aspect ratio of image
+  loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+    if (loadingProgress == null) {
+      return child;
+    }
+    return Center(
+      child: CircularProgressIndicator(
+        value: loadingProgress.expectedTotalBytes != null
+            ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+            : null,
+      ),
+    );
+  },
+  errorBuilder: (context, error, stackTrace) {
+    return Text('Failed to load image.');
+  },
+),
+SizedBox(height: 12.0),
                                 Row(
                                   children: [
                                     IconButton(

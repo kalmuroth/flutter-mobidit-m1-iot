@@ -35,6 +35,7 @@ class _AddPostPageState extends State<AddPostPage> {
   String idUser = '';
   FirebaseAuth _auth = FirebaseAuth.instance;
   num NbLikes = 0;
+  String photoUrl = '';
 
 /*     @override
     void initState() {
@@ -44,18 +45,43 @@ class _AddPostPageState extends State<AddPostPage> {
     }
  */
 
-@override
-void initState() {
-  super.initState();
-  if (_auth.currentUser != null) {
-    idUser = _auth.currentUser!.uid;  // Here you get the uid of the current user
-  } else {
-    // handle case where no user is signed in.
+  Future<String> uploadBase64ToServer(String base64Image) async {
+    // API endpoint
+    String apiUrl =
+        "https://europe-west2-flutter-mobidit-m1-iot.cloudfunctions.net/upload-uploadFileInBase64";
+
+    // Send a POST request
+    final response = await http.post(
+      Uri.parse(apiUrl),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"fileData": base64Image}),
+    );
+
+    // If the server returns a 200 OK response, parse the JSON.
+    if (response.statusCode == 200) {
+      String responseBody = jsonDecode(response.body);
+
+      // Assuming the URL is returned in the 'url' key.
+      // Change this to the actual key if it's different.
+      return responseBody;
+    } else {
+      // If the server returns an error, throw an exception.
+      throw Exception(
+          'Failed to upload image. Server responded with status code ${response.statusCode}.');
+    }
   }
-  fetchPosts();
-}
 
-
+  @override
+  void initState() {
+    super.initState();
+    if (_auth.currentUser != null) {
+      idUser =
+          _auth.currentUser!.uid; // Here you get the uid of the current user
+    } else {
+      // handle case where no user is signed in.
+    }
+    fetchPosts();
+  }
 
   Future<void> fetchPosts() async {
     try {
@@ -68,8 +94,8 @@ void initState() {
     }
   }
 
-  Future<void> addPost(
-      String title, String text, String id_category, String photo, String idUser, num like) async {
+  Future<void> addPost(String title, String text, String id_category,
+      String photo, String idUser, num like) async {
     final url =
         'https://europe-west2-flutter-mobidit-m1-iot.cloudfunctions.net/admin-post';
     final response = await http.post(
@@ -107,7 +133,6 @@ void initState() {
   Future<void> _loadImageBytes(XFile image) async {
     _imageBytes = await image.readAsBytes();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -191,7 +216,12 @@ void initState() {
                 // Get the selected category ID
                 //String categoryId = selectedCategoryId;
 
-                await addPost(title, text, id_category, photo, idUser, Likes);
+                photoUrl = await uploadBase64ToServer(photo);
+
+                print(photoUrl);
+
+                await addPost(
+                    title, text, id_category, photoUrl, idUser, Likes);
 
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Processing Data')),
