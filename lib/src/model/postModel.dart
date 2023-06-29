@@ -4,6 +4,7 @@ class Post {
   final String title;
   final String text;
   String id_category;
+  final String photo;
   final String comments;
   bool isLiked;
 
@@ -13,6 +14,7 @@ class Post {
     required this.title,
     required this.text,
     required this.id_category,
+    required this.photo,
     required this.comments,
     this.isLiked = false,
   });
@@ -36,6 +38,7 @@ class Post {
       title: tab['title'],
       text: text, 
       id_category: tab['id_category'],
+      photo: tab['photo'],
       comments: comments,
     );
 
