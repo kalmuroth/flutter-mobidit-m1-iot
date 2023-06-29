@@ -8,7 +8,9 @@ class Post {
   final String text;
   String id_category;
   List<Comment> comments;
+  final String photo;
   bool isLiked;
+
 
   Post({
     this.id_post = '',
@@ -18,7 +20,9 @@ class Post {
     required this.text,
     required this.id_category,
     this.comments = const [],
+    required this.photo,
     this.isLiked = false,
+  
   });
 
   factory Post.fromJson(Map<String, dynamic> json) {
@@ -37,6 +41,8 @@ class Post {
       text: text, 
       id_category: tab['id_category'],
       id_post: id,
+      photo: tab['photo'],
+
     );
 
     return post;

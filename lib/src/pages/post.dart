@@ -1,16 +1,20 @@
 // ignore_for_file: prefer_const_constructors
 
+import 'dart:convert';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobidit_m1_iot/src/pages/AddPost.dart';
 import 'package:flutter_mobidit_m1_iot/src/pages/login.dart';
 import '../model/postModel.dart';
 import '../model/commentModel.dart';
+import '../model/userModel.dart';
 import '../services/dbService.dart';
+import 'package:http/http.dart' as http;
+
 
 class Posts extends StatelessWidget {
   const Posts({super.key});
-
   static const routeName = '/home';
   @override
   Widget build(BuildContext context) {
@@ -32,14 +36,35 @@ class RedditHomePage extends StatefulWidget {
 class _RedditHomePageState extends State<RedditHomePage> {
 
   final DatabaseService postService = DatabaseService();
+
   List<Post> posts = [];
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+   String idUser = '';
+  bool status = false;
   
+
   String selectedCategory = '';
 
-  @override
+/*   @override
   void initState() {
     super.initState();
     fetchPosts();
+
+  } */
+
+    @override
+  void initState() {
+    super.initState();
+    if (_auth.currentUser != null) {
+      idUser =
+          _auth.currentUser!.uid; // Here you get the uid of the current user
+    } else {
+      // handle case where no user is signed in.
+    }
+    fetchPosts();
+
+    isAdmin();
+
   }
 
   Future<void> fetchPosts() async {
@@ -53,11 +78,42 @@ class _RedditHomePageState extends State<RedditHomePage> {
     }
   }
 
+
+Future<String> getUserInfo(String userId) async {
+  final response = await http.get(
+    Uri.parse('https://europe-west2-flutter-mobidit-m1-iot.cloudfunctions.net/admin-user/$userId'),
+  );
+
+  if (response.statusCode == 200) {
+    Map<String, dynamic> responseBody = jsonDecode(response.body);
+    Map<String, dynamic> keyData = responseBody['keyData'];
+    Users user = Users.fromJson(keyData);
+    return user.speudo; // assuming Users has a pseudo field
+  } else {
+    throw Exception('Failed to load user data');
+  }
+}
+
+
+  Future<void> isAdmin() async {
+    try {
+      User? user = await FirebaseAuth.instance.currentUser;
+      String userId = user?.uid ?? '';
+      bool fetchedStatus = await postService.getUserStatus(userId);
+      setState(() {
+         status = fetchedStatus;
+      });
+    } catch (e) {
+      print('$e');
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
          appBar: AppBar(
-        title: Text('Reddit'),
+        title: Text("Reddit"),
         actions: [
           StreamBuilder<User?>(
             stream: FirebaseAuth.instance.authStateChanges(),
@@ -133,73 +189,114 @@ class _RedditHomePageState extends State<RedditHomePage> {
                     child: CircularProgressIndicator(),
                   )
                 : ListView.builder(
-                    itemCount: posts.length,
-                    itemBuilder: (context, index) {
-                      Post post = posts[index];
-                      if (selectedCategory.isNotEmpty && post.id_category != selectedCategory) {
-                        return Container();
+  itemCount: posts.length,
+  itemBuilder: (context, index) {
+    Post post = posts[index];
+    if (selectedCategory.isNotEmpty && post.id_category != selectedCategory) {
+      return Container();
+    }
+    return FutureBuilder<String>(
+      future: getUserInfo(post.id_user),
+      builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        }
+        return InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PostDetailPage(post: post),
+              ),
+            );
+          },
+          child: Card(
+            margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+            elevation: 4.0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(10.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    post.title,
+                    style: TextStyle(
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 8.0),
+                  Text(
+                    'Posted by ${snapshot.data}',
+                    style: TextStyle(
+                      fontSize: 14.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  SizedBox(height: 8.0),
+                  Text(
+                    post.text,
+                    style: TextStyle(fontSize: 16.0),
+                  ),
+                  SizedBox(height: 12.0),
+                  Image.network(
+                    post.photo,
+                    fit: BoxFit.cover,
+                    loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                      if (loadingProgress == null) {
+                        return child;
                       }
-                      return InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => PostDetailPage(post: post),
-                            ),
-                          );
-                        },
-                        child: Card(
-                          margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
-                          elevation: 4.0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                          child: Padding(
-                            padding: EdgeInsets.all(10.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  post.title,
-                                  style: TextStyle(
-                                    fontSize: 18.0,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(height: 8.0),
-                                Text(
-                                  post.text,
-                                  style: TextStyle(fontSize: 16.0),
-                                ),
-                                SizedBox(height: 12.0),
-                                Row(
-                                  children: [
-                                    IconButton(
-                                      icon: Icon(
-                                        post.isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
-                                        color: post.isLiked ? Colors.blue : null,
-                                      ),
-                                      onPressed: () {
-                                        setState(() {
-                                          if (post.isLiked) {
-                                            post.like--;
-                                          } else {
-                                            post.like++;
-                                          }
-                                          post.isLiked = !post.isLiked;
-                                        });
-                                      },
-                                    ),
-                                    Text(post.like.toString()),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
+                      return Center(
+                        child: CircularProgressIndicator(
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                              : null,
                         ),
                       );
                     },
+                    errorBuilder: (context, error, stackTrace) {
+                      return Text('Failed to load image.');
+                    },
                   ),
+                  SizedBox(height: 12.0),
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          post.isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
+                          color: post.isLiked ? Colors.blue : null,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            if (post.isLiked) {
+                              post.like--;
+                            } else {
+                              post.like++;
+                            }
+                            post.isLiked = !post.isLiked;
+                          });
+                        },
+                      ),
+                      Text(post.like.toString()),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  },
+),
+
           ),
         ],
       ),
