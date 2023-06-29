@@ -9,7 +9,6 @@ import '../services/dbService.dart';
 
 class Posts extends StatelessWidget {
   const Posts({super.key});
-
   static const routeName = '/home';
   @override
   Widget build(BuildContext context) {
@@ -31,14 +30,15 @@ class RedditHomePage extends StatefulWidget {
 class _RedditHomePageState extends State<RedditHomePage> {
 
   final DatabaseService postService = DatabaseService();
-  List<Post> posts = [];
-  
+  List<Post> posts = [];  
+  bool status = false;
   String selectedCategory = '';
 
   @override
   void initState() {
     super.initState();
     fetchPosts();
+    isAdmin();
   }
 
   Future<void> fetchPosts() async {
@@ -52,11 +52,24 @@ class _RedditHomePageState extends State<RedditHomePage> {
     }
   }
 
+  Future<void> isAdmin() async {
+    try {
+      User? user = await FirebaseAuth.instance.currentUser;
+      String userId = user?.uid ?? '';
+      bool fetchedStatus = await postService.getUserStatus(userId);
+      setState(() {
+         status = fetchedStatus;
+      });
+    } catch (e) {
+      print('$e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
          appBar: AppBar(
-        title: Text('Reddit'),
+        title: Text("Reddit"),
         actions: [
           StreamBuilder<User?>(
             stream: FirebaseAuth.instance.authStateChanges(),
