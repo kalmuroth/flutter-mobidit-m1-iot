@@ -34,6 +34,18 @@ class DatabaseService {
     } else {
       throw Exception('Error fetching category');
     }
+  }
 
+  Future<bool> getUserStatus(String userId) async {
+    var url = 'https://europe-west2-flutter-mobidit-m1-iot.cloudfunctions.net/admin-user/' + userId;
+    var response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      var jsonResponse = json.decode(response.body);
+      var status = jsonResponse['keyData']['isAdmin'];
+      return status;
+    } else {
+      throw Exception('Error fetching category');
+    }
   }
 }

@@ -14,7 +14,6 @@ import 'package:http/http.dart' as http;
 
 class Posts extends StatelessWidget {
   const Posts({super.key});
-
   static const routeName = '/home';
   @override
   Widget build(BuildContext context) {
@@ -36,16 +35,20 @@ class RedditHomePage extends StatefulWidget {
 class _RedditHomePageState extends State<RedditHomePage> {
 
   final DatabaseService postService = DatabaseService();
+
   List<Post> posts = [];
   final FirebaseAuth _auth = FirebaseAuth.instance;
    String idUser = '';
+  bool status = false;
   
+
   String selectedCategory = '';
 
 /*   @override
   void initState() {
     super.initState();
     fetchPosts();
+
   } */
 
     @override
@@ -58,6 +61,9 @@ class _RedditHomePageState extends State<RedditHomePage> {
       // handle case where no user is signed in.
     }
     fetchPosts();
+
+    isAdmin();
+
   }
 
   Future<void> fetchPosts() async {
@@ -88,14 +94,25 @@ Future<String> getUserInfo(String userId) async {
 }
 
 
-
+  Future<void> isAdmin() async {
+    try {
+      User? user = await FirebaseAuth.instance.currentUser;
+      String userId = user?.uid ?? '';
+      bool fetchedStatus = await postService.getUserStatus(userId);
+      setState(() {
+         status = fetchedStatus;
+      });
+    } catch (e) {
+      print('$e');
+    }
+  }
 
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
          appBar: AppBar(
-        title: Text('Reddit'),
+        title: Text("Reddit"),
         actions: [
           StreamBuilder<User?>(
             stream: FirebaseAuth.instance.authStateChanges(),
