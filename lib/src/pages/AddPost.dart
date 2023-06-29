@@ -173,7 +173,7 @@ class _AddPostPageState extends State<AddPostPage> {
                 // Get the selected category ID
                 //String categoryId = selectedCategoryId;
 
-                await addPost(title, text, category, imagePath);
+                await addPost(title, text, category, imagePath, idUser);
 
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Processing Data')),
