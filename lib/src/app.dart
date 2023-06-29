@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_mobidit_m1_iot/src/pages/AddPost.dart';
 import 'package:flutter_mobidit_m1_iot/src/pages/post.dart';
 
 import 'pages/register.dart';
@@ -80,7 +81,7 @@ class MyApp extends StatelessWidget {
                     return const AddPostPage();
 
                   default:
-                    return const Login();
+                    return const Posts();
                 }
               },
             );

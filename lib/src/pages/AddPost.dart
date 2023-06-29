@@ -1,4 +1,4 @@
-import 'dart:io';
+// ignore_for_file: prefer_const_constructors, prefer_const_declarations
 
 import 'package:flutter/material.dart';
 import 'package:flutter_mobidit_m1_iot/src/model/postModel.dart';
@@ -24,6 +24,47 @@ class AddPostPage extends StatefulWidget {
 class _AddPostPageState extends State<AddPostPage> {
   final ImagePicker _picker = ImagePicker();
   XFile? _image;
+  Uint8List? _imageBytes;
+  final _titleController = TextEditingController();
+  final _textController = TextEditingController();
+  final DatabaseService postService = DatabaseService();
+  List<Post> posts = [];
+   String selectedCategory = '';
+
+  @override
+  void initState() {
+    super.initState();
+    fetchPosts();
+  }
+
+  Future<void> fetchPosts() async {
+    try {
+      List<Post> fetchedPosts = await postService.getAllPost();
+      setState(() {
+        posts = fetchedPosts;
+      });
+    } catch (e) {
+      print('$e');
+    }
+  }
+
+  Future<void> addPost(String title, String text, String category, String imagePath) async {
+    final url = 'https://europe-west2-flutter-mobidit-m1-iot.cloudfunctions.net/post';
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {"Content-Type": "application/json"},
+      body: json.encode({
+        'title': title,
+        'text': text,
+        'category': category,
+        'imagePath': imagePath,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      print('Failed to add post. Status code: ${response.statusCode}.');
+    }
+  }
 
   Future getImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
@@ -38,6 +79,44 @@ class _AddPostPageState extends State<AddPostPage> {
     });
   }
 
+  // Reads the bytes of the image file and updates _imageBytes
+  Future<void> _loadImageBytes(XFile image) async {
+    _imageBytes = await image.readAsBytes();
+  }
+
+
+
+
+
+
+
+
+/*   final List<Post> posts = [
+    Post(
+      author: 'John Doe',
+      like: 10,
+      title: 'First Post',
+      content: 'This is the content of the first post.',
+      category: 'Category A', comments: '',
+    ),
+    Post(
+      author: 'Jane Smith',
+      like: 5,
+      title: 'Second Post',
+      content: 'This is the content of the second post.',
+      category: 'Category B',
+    ),
+    Post(
+      author: 'Alice Johnson',
+      like: 3,
+      title: 'Third Post',
+      content: 'This is the content of the third post.',
+      category: 'Category A',
+    ),
+  ]; */
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,10 +127,22 @@ class _AddPostPageState extends State<AddPostPage> {
         padding: EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextFormField(
-              decoration: InputDecoration(labelText: 'Category'),
+              Padding(
+            padding: EdgeInsets.all(10.0),
+            child: DropdownButtonFormField<String>(
+              value: selectedCategory,
+              onChanged: (newValue) {
+                setState(() {
+                  selectedCategory = newValue!;
+                });
+              },
+              items: getCategoriesDropdownItems(),
+              decoration: InputDecoration(
+                labelText: 'Category',
+                border: OutlineInputBorder(),
+              ),
             ),
-            SizedBox(height: 16.0),
+          ),
             TextFormField(
               controller: _titleController,
               decoration: InputDecoration(labelText: 'Title'),
@@ -88,5 +179,27 @@ class _AddPostPageState extends State<AddPostPage> {
         ),
       ),
     );
+  }
+
+  List<DropdownMenuItem<String>> getCategoriesDropdownItems() {
+    Set<String> categoriesSet = Set<String>();
+    for (var post in posts) {
+      categoriesSet.add(post.id_category);
+    }
+
+    List<DropdownMenuItem<String>> dropdownItems = [];
+    dropdownItems.add(DropdownMenuItem<String>(
+      value: '', 
+      child: Text('All'),
+    ));
+
+    for (var category in categoriesSet) {
+      dropdownItems.add(DropdownMenuItem<String>(
+        value: category,
+        child: Text(category),
+      ));
+    }
+
+    return dropdownItems;
   }
 }

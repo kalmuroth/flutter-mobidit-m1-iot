@@ -1,7 +1,9 @@
-import 'package:firebase_auth/firebase_auth.dart';
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:flutter_mobidit_m1_iot/src/pages/AddPost.dart';
-import 'package:flutter_mobidit_m1_iot/src/pages/login.dart';
+import '../model/postModel.dart';
+import '../services/dbService.dart';
 
 class Posts extends StatelessWidget {
   const Posts({super.key});
@@ -31,9 +33,6 @@ class _RedditHomePageState extends State<RedditHomePage> {
   
   String selectedCategory = '';
 
-  final TextEditingController commentController = TextEditingController();
-  List<Comment> comments = [];
-
   @override
   void initState() {
     super.initState();
@@ -52,77 +51,10 @@ class _RedditHomePageState extends State<RedditHomePage> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    fetchPosts();
-  }
-
-  Future<void> fetchPosts() async {
-    try {
-      List<Post> fetchedPosts = await postService.getAllPost();
-      setState(() {
-        posts = fetchedPosts;
-      });
-    } catch (e) {
-      print('$e');
-    }
-  }
-
-  /*@override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Reddit'),
-        actions: [
-          StreamBuilder<User?>(
-            stream: FirebaseAuth.instance.authStateChanges(),
-            builder: (BuildContext context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Container(); // Return an empty container while waiting for the auth state
-              }
-              final user = snapshot.data;
-              if (user == null) {
-                return ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const Login()),
-                    );
-                  },
-                  child: Text(
-                    'Login',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16.0,
-                    ),
-                  ),
-                );
-              } else {
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment
-                      .spaceEvenly, // for evenly space between buttons
-                  children: <Widget>[
-                    ElevatedButton(
-                      onPressed: () {
-                         Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const AddPostPage()),
-                    );
-                      },
-                      child: Text('Add Post'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () async {
-                        await FirebaseAuth.instance.signOut();
-                      },
-                      child: Text('Logout'),
-                    ),
-                  ],
-                );
-              }
-            },
-          ),
-        ],
       ),
       body: Column(
         children: [
@@ -217,6 +149,18 @@ class _RedditHomePageState extends State<RedditHomePage> {
                   ),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Add navigation to the 'Add Post' screen here
+            Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const AddPostPage()),
+                          );
+        },
+        child: Icon(Icons.add),
+        backgroundColor: Colors.blue,
       ),
     );
   }
