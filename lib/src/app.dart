@@ -75,8 +75,10 @@ class MyApp extends StatelessWidget {
                   case Login.routeName:
                     return const Login();
                   case Posts.routeName:
-                    return const Posts();  
-                    
+                    return const Posts();
+                  case AddPostPage.routeName:
+                    return const AddPostPage();
+
                   default:
                     return const Login();
                 }

@@ -1,6 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../model/postModel.dart';
-import '../services/dbService.dart';
+import 'package:flutter_mobidit_m1_iot/src/pages/AddPost.dart';
+import 'package:flutter_mobidit_m1_iot/src/pages/login.dart';
 
 class Posts extends StatelessWidget {
   const Posts({super.key});
@@ -33,11 +34,21 @@ class _RedditHomePageState extends State<RedditHomePage> {
   final TextEditingController commentController = TextEditingController();
   List<Comment> comments = [];
 
-
   @override
-  void dispose() {
-    commentController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    fetchPosts();
+  }
+
+  Future<void> fetchPosts() async {
+    try {
+      List<Post> fetchedPosts = await postService.getAllPost();
+      setState(() {
+        posts = fetchedPosts;
+      });
+    } catch (e) {
+      print('$e');
+    }
   }
 
   @override
@@ -62,102 +73,56 @@ class _RedditHomePageState extends State<RedditHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Reddit'),
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: EdgeInsets.all(10.0),
-            child: DropdownButtonFormField<String>(
-              value: selectedCategory,
-              onChanged: (newValue) {
-                setState(() {
-                  selectedCategory = newValue!;
-                });
-              },
-              items: getCategoriesDropdownItems(),
-              decoration: InputDecoration(
-                labelText: 'Category',
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: posts.length,
-              itemBuilder: (context, index) {
-                Post post = posts[index];
-                if (selectedCategory.isNotEmpty && post.id_category != selectedCategory) {
-                  return Container(); 
-                }
-                return GestureDetector(
-                  onTap: () {
+        actions: [
+          StreamBuilder<User?>(
+            stream: FirebaseAuth.instance.authStateChanges(),
+            builder: (BuildContext context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Container(); // Return an empty container while waiting for the auth state
+              }
+              final user = snapshot.data;
+              if (user == null) {
+                return ElevatedButton(
+                  onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => PostDetailPage(post: post),
-                      ),
+                      MaterialPageRoute(builder: (context) => const Login()),
                     );
                   },
-                  child: Card(
-                    margin: EdgeInsets.all(10.0),
-                    elevation: 4.0,
-                    child: Padding(
-                      padding: EdgeInsets.all(10.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            post.title,
-                            style: TextStyle(
-                              fontSize: 18.0,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 8.0),
-                          Text(
-                            post.text,
-                            style: TextStyle(fontSize: 16.0),
-                          ),
-                          SizedBox(height: 12.0),
-                          Row(
-                            children: [
-                              IconButton(
-                                icon: Icon(
-                                  post.isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
-                                  color: post.isLiked ? Colors.blue : null,
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    if (post.isLiked) {
-                                      post.like--;
-                                    } else {
-                                      post.like++;
-                                    }
-                                    post.isLiked = !post.isLiked;
-                                  });
-                                },
-                              ),
-                              Text(post.like.toString()),
-                            ],
-                          ),
-                        ],
-                      ),
+                  child: Text(
+                    'Login',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16.0,
                     ),
                   ),
                 );
-              },
-            ),
+              } else {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment
+                      .spaceEvenly, // for evenly space between buttons
+                  children: <Widget>[
+                    ElevatedButton(
+                      onPressed: () {
+                         Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AddPostPage()),
+                    );
+                      },
+                      child: Text('Add Post'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () async {
+                        await FirebaseAuth.instance.signOut();
+                      },
+                      child: Text('Logout'),
+                    ),
+                  ],
+                );
+              }
+            },
           ),
         ],
-      ),
-    );
-  }*/
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Reddit'),
       ),
       body: Column(
         children: [
