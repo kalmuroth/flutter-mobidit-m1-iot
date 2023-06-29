@@ -5,7 +5,7 @@ import 'dart:convert';
 class DatabaseService {
 
   Future<List<Post>> getAllPost() async {
-    var url = 'https://europe-west2-flutter-mobidit-m1-iot.cloudfunctions.net/post';
+    var url = 'https://europe-west2-flutter-mobidit-m1-iot.cloudfunctions.net/admin-post';
     var response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
@@ -24,7 +24,7 @@ class DatabaseService {
   }
 
   Future<String> getCategory(String categoryId) async {
-    var url = 'https://europe-west2-flutter-mobidit-m1-iot.cloudfunctions.net/category/' + categoryId;
+    var url = 'https://europe-west2-flutter-mobidit-m1-iot.cloudfunctions.net/admin-category/' + categoryId;
     var response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {

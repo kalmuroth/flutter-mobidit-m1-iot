@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_declarations
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobidit_m1_iot/src/model/postModel.dart';
 import 'package:flutter_mobidit_m1_iot/src/pages/post.dart';
@@ -10,7 +11,6 @@ import 'dart:typed_data'; // Needed for Uint8List
 import 'package:flutter/material.dart';
 import '../model/postModel.dart';
 import '../services/dbService.dart';
-
 
 class AddPostPage extends StatefulWidget {
   const AddPostPage({Key? key}) : super(key: key);
@@ -29,13 +29,17 @@ class _AddPostPageState extends State<AddPostPage> {
   final _textController = TextEditingController();
   final DatabaseService postService = DatabaseService();
   List<Post> posts = [];
-   String selectedCategory = '';
+  String selectedCategory = '';
+  String selectedCategoryId = '';
+  List<Map<String, dynamic>> categories = [];
+  String idUser = "";
 
   @override
   void initState() {
     super.initState();
     fetchPosts();
   }
+
 
   Future<void> fetchPosts() async {
     try {
@@ -48,8 +52,10 @@ class _AddPostPageState extends State<AddPostPage> {
     }
   }
 
-  Future<void> addPost(String title, String text, String category, String imagePath) async {
-    final url = 'https://europe-west2-flutter-mobidit-m1-iot.cloudfunctions.net/post';
+  Future<void> addPost(
+      String title, String text, String category, String imagePath, String idUser) async {
+    final url =
+        'https://europe-west2-flutter-mobidit-m1-iot.cloudfunctions.net/admin-post';
     final response = await http.post(
       Uri.parse(url),
       headers: {"Content-Type": "application/json"},
@@ -58,6 +64,7 @@ class _AddPostPageState extends State<AddPostPage> {
         'text': text,
         'category': category,
         'imagePath': imagePath,
+        'id_user': idUser,
       }),
     );
 
@@ -85,38 +92,6 @@ class _AddPostPageState extends State<AddPostPage> {
   }
 
 
-
-
-
-
-
-
-/*   final List<Post> posts = [
-    Post(
-      author: 'John Doe',
-      like: 10,
-      title: 'First Post',
-      content: 'This is the content of the first post.',
-      category: 'Category A', comments: '',
-    ),
-    Post(
-      author: 'Jane Smith',
-      like: 5,
-      title: 'Second Post',
-      content: 'This is the content of the second post.',
-      category: 'Category B',
-    ),
-    Post(
-      author: 'Alice Johnson',
-      like: 3,
-      title: 'Third Post',
-      content: 'This is the content of the third post.',
-      category: 'Category A',
-    ),
-  ]; */
-
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -127,22 +102,34 @@ class _AddPostPageState extends State<AddPostPage> {
         padding: EdgeInsets.all(16.0),
         child: Column(
           children: [
-              Padding(
-            padding: EdgeInsets.all(10.0),
-            child: DropdownButtonFormField<String>(
-              value: selectedCategory,
-              onChanged: (newValue) {
-                setState(() {
-                  selectedCategory = newValue!;
-                });
-              },
-              items: getCategoriesDropdownItems(),
-              decoration: InputDecoration(
-                labelText: 'Category',
-                border: OutlineInputBorder(),
+            Padding(
+              padding: EdgeInsets.all(10.0),
+              child: FutureBuilder<List<DropdownMenuItem<String>>>(
+                future: getCategoriesDropdownItems(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return DropdownButtonFormField<String>(
+                      value: selectedCategory,
+                      onChanged: (newValue) {
+                        setState(() {
+                          selectedCategory = newValue!;
+                          //selectedCategoryId = getCategoryID(selectedCategory);
+                        });
+                      },
+                      items: snapshot.data,
+                      decoration: InputDecoration(
+                        labelText: 'Category',
+                        border: OutlineInputBorder(),
+                      ),
+                    );
+                  } else if (snapshot.hasError) {
+                    return Text('Failed to fetch categories');
+                  } else {
+                    return CircularProgressIndicator();
+                  }
+                },
               ),
             ),
-          ),
             TextFormField(
               controller: _titleController,
               decoration: InputDecoration(labelText: 'Title'),
@@ -153,19 +140,38 @@ class _AddPostPageState extends State<AddPostPage> {
               maxLines: null, // Allow multiple lines of text
             ),
             _imageBytes == null
-              ? Text('No image selected.')
-              : Image.memory(_imageBytes!),
+                ? Text('No image selected.')
+                : Image.memory(_imageBytes!),
             TextButton(
               onPressed: getImage,
               child: Text('Pick Image'),
             ),
             SizedBox(height: 16.0),
-            ElevatedButton(
+            /*   ElevatedButton(
               onPressed: () async {
                 String title = _titleController.text;
                 String text = _textController.text;
                 String category = selectedCategory;
                 String imagePath = base64Encode(_imageBytes!);
+
+                await addPost(title, text, category, imagePath);
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Processing Data')),
+                );
+              },
+              child: Text('Add Post'),
+            ), */
+            ElevatedButton(
+              onPressed: () async {
+                String title = _titleController.text;
+                String text = _textController.text;
+                //String category = selectedCategoryId;
+                String category = selectedCategory;
+                String imagePath = base64Encode(_imageBytes!);
+
+                // Get the selected category ID
+                //String categoryId = selectedCategoryId;
 
                 await addPost(title, text, category, imagePath);
 
@@ -181,7 +187,7 @@ class _AddPostPageState extends State<AddPostPage> {
     );
   }
 
-  List<DropdownMenuItem<String>> getCategoriesDropdownItems() {
+/*   List<DropdownMenuItem<String>> getCategoriesDropdownItems() {
     Set<String> categoriesSet = Set<String>();
     for (var post in posts) {
       categoriesSet.add(post.id_category);
@@ -198,6 +204,56 @@ class _AddPostPageState extends State<AddPostPage> {
         value: category,
         child: Text(category),
       ));
+    }
+
+    return dropdownItems;
+  } */
+  String getCategoryID(String categoryName) {
+    for (var category in categories) {
+      if (category['categoryData']['name'] == categoryName) {
+        return category['categoryId'];
+      }
+    }
+    return '';
+  }
+
+  Future<List<Map<String, dynamic>>> fetchCategories() async {
+    final url =
+        'https://europe-west2-flutter-mobidit-m1-iot.cloudfunctions.net/admin-category';
+    final response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data is List) {
+        return List<Map<String, dynamic>>.from(data);
+      } else if (data is Map<String, dynamic>) {
+        return [data];
+      }
+    }
+    throw Exception('Failed to fetch categories');
+  }
+
+  Future<List<DropdownMenuItem<String>>> getCategoriesDropdownItems() async {
+    List<DropdownMenuItem<String>> dropdownItems = [];
+
+    try {
+      List<Map<String, dynamic>> categories = await fetchCategories();
+
+      // Add an option for all categories
+      dropdownItems.add(DropdownMenuItem<String>(
+        value: '',
+        child: Text('All'),
+      ));
+
+      // Add dropdown items for each category
+      for (var category in categories) {
+        dropdownItems.add(DropdownMenuItem<String>(
+          value: category['categoryId'],
+          child: Text(category['categoryData']['name']),
+        ));
+      }
+    } catch (error) {
+      print('Failed to fetch categories: $error');
     }
 
     return dropdownItems;
