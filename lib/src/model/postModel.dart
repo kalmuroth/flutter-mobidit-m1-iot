@@ -1,29 +1,29 @@
+import 'commentModel.dart';
+
 class Post {
+  final String id_post;
   final String id_user;
   int like;
   final String title;
   final String text;
   String id_category;
-  final String comments;
+  List<Comment> comments;
   bool isLiked;
 
   Post({
+    this.id_post = '',
     required this.id_user,
     required this.like,
     required this.title,
     required this.text,
     required this.id_category,
-    required this.comments,
+    this.comments = const [],
     this.isLiked = false,
   });
 
   factory Post.fromJson(Map<String, dynamic> json) {
+    var id = json['keyId'];
     var tab = json['keyData'];
-
-    var comments = tab['comments'];
-    if (comments == null) {
-      comments = '';
-    }
 
     var text = tab['text'];
     if (text == null) {
@@ -36,7 +36,7 @@ class Post {
       title: tab['title'],
       text: text, 
       id_category: tab['id_category'],
-      comments: comments,
+      id_post: id,
     );
 
     return post;
