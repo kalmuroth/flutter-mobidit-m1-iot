@@ -1,7 +1,9 @@
 // ignore_for_file: prefer_const_constructors
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobidit_m1_iot/src/pages/AddPost.dart';
+import 'package:flutter_mobidit_m1_iot/src/pages/login.dart';
 import '../model/postModel.dart';
 import '../services/dbService.dart';
 
@@ -53,8 +55,58 @@ class _RedditHomePageState extends State<RedditHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+         appBar: AppBar(
         title: Text('Reddit'),
+        actions: [
+          StreamBuilder<User?>(
+            stream: FirebaseAuth.instance.authStateChanges(),
+            builder: (BuildContext context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Container(); // Return an empty container while waiting for the auth state
+              }
+              final user = snapshot.data;
+              if (user == null) {
+                return ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const Login()),
+                    );
+                  },
+                  child: Text(
+                    'Login',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16.0,
+                    ),
+                  ),
+                );
+              } else {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment
+                      .spaceEvenly, // for evenly space between buttons
+                  children: <Widget>[
+                    ElevatedButton(
+                      onPressed: () {
+                         Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AddPostPage()),
+                    );
+                      },
+                      child: Text('Add Post'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () async {
+                        await FirebaseAuth.instance.signOut();
+                      },
+                      child: Text('Logout'),
+                    ),
+                  ],
+                );
+              }
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
