@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mobidit_m1_iot/src/pages/AddPost.dart';
 import 'package:flutter_mobidit_m1_iot/src/pages/login.dart';
 import '../model/postModel.dart';
+import '../model/commentModel.dart';
 import '../model/userModel.dart';
 import '../services/dbService.dart';
 import 'package:http/http.dart' as http;
@@ -339,12 +340,6 @@ Future<String> getUserInfo(String userId) async {
 }
 
 
-class Comment {
-  final String content;
-
-  Comment({required this.content});
-}
-
 class PostDetailPage extends StatefulWidget {
   final Post post;
 
@@ -355,9 +350,22 @@ class PostDetailPage extends StatefulWidget {
 }
 
 class _PostDetailPageState extends State<PostDetailPage> {
+  Post get post => widget.post;
 
+  final DatabaseService service = DatabaseService();
+  Comment tmp = Comment(id_post: '', content: '');
   final TextEditingController commentController = TextEditingController();
   List<Comment> comments = [];
+
+  @override
+  void initState() {
+    super.initState();
+    comments = post.comments;
+  }
+
+  void submitComment(Comment comment) {
+    service.updateComment(comment);
+  }
 
   @override
   void dispose() {
@@ -434,6 +442,27 @@ class _PostDetailPageState extends State<PostDetailPage> {
                         children: [
                           SizedBox(height: 4.0),
                           Text(comment.content),
+                          Row(
+                            children: [
+                              IconButton(
+                                icon: Icon(
+                                  comment.isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
+                                  color: comment.isLiked ? Colors.blue : null,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    if (comment.isLiked) {
+                                      comment.like--;
+                                    } else {
+                                      comment.like++;
+                                    }
+                                    comment.isLiked = !comment.isLiked;
+                                  });
+                                },
+                              ),
+                              Text(comment.like.toString()),
+                            ],
+                          ),
                         ],
                       ),
                     ),
@@ -453,11 +482,14 @@ class _PostDetailPageState extends State<PostDetailPage> {
             ElevatedButton(
               onPressed: () {
                 setState(() {
-                  comments.add(Comment(
+                  tmp = Comment(
+                    id_post: post.id_post,
                     content: commentController.text,
-                  ));
+                  );
+                  comments.add(tmp);
                   commentController.clear();
                 });
+                submitComment(tmp);
               },
               child: Text('Submit'),
             ),
