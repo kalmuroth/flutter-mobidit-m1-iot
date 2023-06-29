@@ -34,6 +34,7 @@ class _AddPostPageState extends State<AddPostPage> {
   List<Map<String, dynamic>> categories = [];
   String idUser = '';
   FirebaseAuth _auth = FirebaseAuth.instance;
+  num NbLikes = 0;
 
 /*     @override
     void initState() {
@@ -68,7 +69,7 @@ void initState() {
   }
 
   Future<void> addPost(
-      String title, String text, String category, String imagePath, String idUser) async {
+      String title, String text, String id_category, String photo, String idUser, num like) async {
     final url =
         'https://europe-west2-flutter-mobidit-m1-iot.cloudfunctions.net/admin-post';
     final response = await http.post(
@@ -77,9 +78,10 @@ void initState() {
       body: json.encode({
         'title': title,
         'text': text,
-        'category': category,
-        'imagePath': imagePath,
+        'id_category': id_category,
+        'photo': photo,
         'id_user': idUser,
+        'like': NbLikes,
       }),
     );
 
@@ -182,13 +184,14 @@ void initState() {
                 String title = _titleController.text;
                 String text = _textController.text;
                 //String category = selectedCategoryId;
-                String category = selectedCategory;
-                String imagePath = base64Encode(_imageBytes!);
+                String id_category = selectedCategory;
+                String photo = base64Encode(_imageBytes!);
+                num Likes = NbLikes;
 
                 // Get the selected category ID
                 //String categoryId = selectedCategoryId;
 
-                await addPost(title, text, category, imagePath, idUser);
+                await addPost(title, text, id_category, photo, idUser, Likes);
 
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Processing Data')),
