@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobidit_m1_iot/src/pages/login.dart';
@@ -150,6 +152,12 @@ class _RegistrationFormState extends State<RegistrationForm> {
 } catch (e) {
   print(e);
 }
+//redirect to login page
+Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const Login()),
+                );
+                
                       
                     }
 

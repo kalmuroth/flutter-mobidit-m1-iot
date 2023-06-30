@@ -46,12 +46,6 @@ class _RedditHomePageState extends State<RedditHomePage> {
 
   String selectedCategory = '';
 
-/*   @override
-  void initState() {
-    super.initState();
-    fetchPosts();
-
-  } */
 
     @override
   void initState() {
@@ -361,18 +355,32 @@ Widget build(BuildContext context) {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+    floatingActionButton: 
+     StreamBuilder<User?>(
+            stream: FirebaseAuth.instance.authStateChanges(),
+            builder: (BuildContext context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Container(); // Return an empty container while waiting for the auth state
+              }
+              final user = snapshot.data;
+              if (user != null) {
+                return FloatingActionButton(
         onPressed: () {
           // Add navigation to the 'Add Post' screen here
           Navigator.push(
             context,
-            MaterialPageRoute(
-                builder: (context) => const AddPostPage()),
+            MaterialPageRoute(builder: (context) => const AddPostPage()),
           );
         },
         child: Icon(Icons.add),
         backgroundColor: Colors.orange,
-      ),
+      );
+              } else {
+                return Container();
+              }
+            },
+          ),
+
     );
   }
 
