@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_mobidit_m1_iot/src/pages/addCategory.dart';
 import 'package:flutter_mobidit_m1_iot/src/pages/addPost.dart';
 import 'package:flutter_mobidit_m1_iot/src/pages/login.dart';
 import '../model/postModel.dart';
@@ -158,6 +159,24 @@ Widget build(BuildContext context) {
                       .spaceEvenly, // for evenly space between buttons
                   children: <Widget>[
                     ElevatedButton(
+                      onPressed: () {
+                         Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const AddPostPage()),
+                        );
+                      },
+                      child: Text('Add Post'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                         Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const AddCategoryPage()),
+                        );
+                      },
+                      child: Text('Add Category'),
+                    ),
+                    ElevatedButton(
                       onPressed: () async {
                         await FirebaseAuth.instance.signOut();
                       },
@@ -308,7 +327,7 @@ Widget build(BuildContext context) {
                   Text(post.like.toString()),
                   Spacer(),
                   Visibility(
-                    visible: status, // Replace 'status' with your boolean variable
+                    visible: status || idUser == post.id_user, // Replace 'status' with your boolean variable
                     child: IconButton(
                       icon: Icon(
                         Icons.delete,

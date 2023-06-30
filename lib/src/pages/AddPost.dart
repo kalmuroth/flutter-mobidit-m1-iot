@@ -226,6 +226,7 @@ class _AddPostPageState extends State<AddPostPage> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Processing Data')),
                 );
+                Navigator.pop(context);
               },
               child: Text('Add Post'),
             ),

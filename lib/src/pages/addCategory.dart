@@ -11,7 +11,7 @@ import 'package:flutter/material.dart';
 import '../model/categoryModel.dart';
 import '../services/dbService.dart';
 
-class AddCategory extends StatefulWidget {
+class AddCategoryPage extends StatefulWidget {
   const AddCategoryPage({Key? key}) : super(key: key);
 
   static const routeName = '/addcategory';
@@ -23,11 +23,11 @@ class AddCategory extends StatefulWidget {
 class _AddCategoryPageState extends State<AddCategoryPage> {
   final ImagePicker _picker = ImagePicker();
   XFile? _image;
+  String name = '';
   Uint8List? _imageBytes;
   final _titleController = TextEditingController();
   final _textController = TextEditingController();
   final DatabaseService categoryService = DatabaseService();
-  List<Category> categories = [];
   String selectedCategory = '';
   String selectedCategoryId = '';
   List<Map<String, dynamic>> categories = [];
@@ -45,58 +45,24 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
     } else {
       // handle case where no user is signed in.
     }
-    fetchCategories();
   }
 
-  Future<void> fetchCategories() async {
-    try {
-      List<Category> fetchedCategories = await categoriesService.getAllCategories();
-      setState(() {
-        categories = fetchedCategories;
-      });
-    } catch (e) {
-      print('$e');
-    }
-  }
 
-  Future<void> addCategory(String title, String text, String id_category,
-      String photo, String idUser, num like) async {
-    final url =
-        'https://europe-west2-flutter-mobidit-m1-iot.cloudfunctions.net/admin-category';
+  Future<void> addCategory(String name, String idUser) async {
+    final url = 'https://europe-west2-flutter-mobidit-m1-iot.cloudfunctions.net/admin-category';
+    final String categoryName = "n/" + name;
     final response = await http.post(
       Uri.parse(url),
       headers: {"Content-Type": "application/json"},
       body: json.encode({
-        'title': title,
-        'text': text,
-        'id_category': id_category,
-        'photo': photo,
-        'id_user': idUser,
-        'like': NbLikes,
+        'name': categoryName,
+        'id_user': idUser
       }),
     );
 
     if (response.statusCode != 200) {
       print('Failed to add category. Status code: ${response.statusCode}.');
     }
-  }
-
-  Future getImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-
-    setState(() {
-      if (pickedFile != null) {
-        _image = pickedFile;
-        _loadImageBytes(pickedFile); // Load the image bytes
-      } else {
-        print('No image selected.');
-      }
-    });
-  }
-
-  // Reads the bytes of the image file and updates _imageBytes
-  Future<void> _loadImageBytes(XFile image) async {
-    _imageBytes = await image.readAsBytes();
   }
 
   @override
@@ -111,70 +77,24 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
           children: [
             Padding(
               padding: EdgeInsets.all(10.0),
-              child: FutureBuilder<List<DropdownMenuItem<String>>>(
-                future: getCategoriesDropdownItems(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    return DropdownButtonFormField<String>(
-                      value: selectedCategory,
-                      onChanged: (newValue) {
-                        setState(() {
-                          selectedCategory = newValue!;
-                          //selectedCategoryId = getCategoryID(selectedCategory);
-                        });
-                      },
-                      items: snapshot.data,
-                      decoration: InputDecoration(
-                        labelText: 'Category',
-                        border: OutlineInputBorder(),
-                      ),
-                    );
-                  } else if (snapshot.hasError) {
-                    return Text('Failed to fetch categories');
-                  } else {
-                    return CircularProgressIndicator();
-                  }
-                },
-              ),
             ),
             TextFormField(
               controller: _titleController,
-              decoration: InputDecoration(labelText: 'Title'),
-            ),
-            TextFormField(
-              controller: _textController,
-              decoration: InputDecoration(labelText: 'Text'),
-              maxLines: null, // Allow multiple lines of text
-            ),
-            _imageBytes == null
-                ? Text('No image selected.')
-                : Image.memory(_imageBytes!),
-            TextButton(
-              onPressed: getImage,
-              child: Text('Pick Image'),
+              decoration: InputDecoration(labelText: 'Name'),
             ),
             SizedBox(height: 16.0),
             ElevatedButton(
               onPressed: () async {
-                String title = _titleController.text;
-                String text = _textController.text;
-                //String category = selectedCategoryId;
-                String id_category = selectedCategory;
-                String photo = base64Encode(_imageBytes!);
-                num Likes = NbLikes;
-
-                // Get the selected category ID
-                //String categoryId = selectedCategoryId;
-
-                await addCategory(
-                    title, text, id_category, photoUrl, idUser, Likes);
-
-                ScaffoldMessenger.of(context).showSnackBar(
+                  String name = _titleController.text;
+                  await addCategory(name, idUser);
+                  ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Processing Data')),
-                );
+                  );
+                  // Navigate back to the home page
+                  Navigator.pop(context);
               },
               child: Text('Add Category'),
-            ),
+            )
           ],
         ),
       ),
@@ -204,31 +124,5 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
       }
     }
     throw Exception('Failed to fetch categories');
-  }
-
-  Future<List<DropdownMenuItem<String>>> getCategoriesDropdownItems() async {
-    List<DropdownMenuItem<String>> dropdownItems = [];
-
-    try {
-      List<Map<String, dynamic>> categories = await fetchCategories();
-
-      // Add an option for all categories
-      dropdownItems.add(DropdownMenuItem<String>(
-        value: '',
-        child: Text('All'),
-      ));
-
-      // Add dropdown items for each category
-      for (var category in categories) {
-        dropdownItems.add(DropdownMenuItem<String>(
-          value: category['categoryId'],
-          child: Text(category['categoryData']['name']),
-        ));
-      }
-    } catch (error) {
-      print('Failed to fetch categories: $error');
-    }
-
-    return dropdownItems;
   }
 }
