@@ -4,7 +4,7 @@ import 'dart:convert';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_mobidit_m1_iot/src/pages/AddPost.dart';
+import 'package:flutter_mobidit_m1_iot/src/pages/addPost.dart';
 import 'package:flutter_mobidit_m1_iot/src/pages/login.dart';
 import '../model/postModel.dart';
 import '../model/commentModel.dart';
@@ -19,9 +19,9 @@ class Posts extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Homme',
+      title: 'Home',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.orange,
       ),
       home: RedditHomePage(),
     );
@@ -62,7 +62,6 @@ class _RedditHomePageState extends State<RedditHomePage> {
       // handle case where no user is signed in.
     }
     fetchPosts();
-
     isAdmin();
 
   }
@@ -94,26 +93,47 @@ Future<String> getUserInfo(String userId) async {
   }
 }
 
+Future<String?> deletePost(String postId) async {
+  final response = await http.delete(
+    Uri.parse('https://europe-west2-flutter-mobidit-m1-iot.cloudfunctions.net/admin-post/$postId'),
+  );
 
-  Future<void> isAdmin() async {
-    try {
-      User? user = await FirebaseAuth.instance.currentUser;
-      String userId = user?.uid ?? '';
-      bool fetchedStatus = await postService.getUserStatus(userId);
-      setState(() {
-         status = fetchedStatus;
-      });
-    } catch (e) {
-      print('$e');
-    }
+  if (response.statusCode == 200) {
+    print("Post deleted");
+    await refreshPosts();
+  } else {
+    throw Exception('Failed to delete post');
   }
+}
+
+Future<void> refreshPosts() async {
+  await fetchPosts();
+}
+
+Future<void> isAdmin() async {
+  try {
+    User? user = await FirebaseAuth.instance.currentUser;
+    String userId = user?.uid ?? '';
+    bool fetchedStatus = await postService.getUserStatus(userId);
+    setState(() {
+        status = fetchedStatus;
+    });
+  } catch (e) {
+    print('$e');
+  }
+}
 
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-         appBar: AppBar(
-        title: Text("Reddit"),
+@override
+Widget build(BuildContext context) {
+   return Scaffold(
+        appBar: AppBar(
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Text("Notreddit"),
+          ],
+        ),
         actions: [
           StreamBuilder<User?>(
             stream: FirebaseAuth.instance.authStateChanges(),
@@ -189,8 +209,8 @@ Future<String> getUserInfo(String userId) async {
                     child: CircularProgressIndicator(),
                   )
                 : ListView.builder(
-  itemCount: posts.length,
-  itemBuilder: (context, index) {
+    itemCount: posts.length,
+    itemBuilder: (context, index) {
     Post post = posts[index];
     if (selectedCategory.isNotEmpty && post.id_category != selectedCategory) {
       return Container();
@@ -205,112 +225,143 @@ Future<String> getUserInfo(String userId) async {
           return Text('Error: ${snapshot.error}');
         }
         return InkWell(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => PostDetailPage(post: post),
-              ),
-            );
-          },
-          child: Card(
-            margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
-            elevation: 4.0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10.0),
-            ),
-            child: Padding(
-              padding: EdgeInsets.all(10.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PostDetailPage(post: post),
+      ),
+    );
+  },
+  child: Align(
+    alignment: Alignment.centerLeft,
+    child: FractionallySizedBox(
+      widthFactor: 0.75, // Set the width factor to 75%
+      child: Card(
+        margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+        elevation: 4.0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(10.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    post.title,
-                    style: TextStyle(
-                      fontSize: 18.0,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 8.0),
-                  Text(
-                    'Posted by ${snapshot.data}',
-                    style: TextStyle(
-                      fontSize: 14.0,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  SizedBox(height: 8.0),
-                  Text(
-                    post.text,
-                    style: TextStyle(fontSize: 16.0),
-                  ),
-                  SizedBox(height: 12.0),
-                  Image.network(
-                    post.photo,
-                    fit: BoxFit.cover,
-                    loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-                      if (loadingProgress == null) {
-                        return child;
-                      }
-                      return Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                              : null,
-                        ),
-                      );
-                    },
-                    errorBuilder: (context, error, stackTrace) {
-                      return Text('Failed to load image.');
-                    },
-                  ),
-                  SizedBox(height: 12.0),
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: Icon(
-                          post.isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
-                          color: post.isLiked ? Colors.blue : null,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            if (post.isLiked) {
-                              post.like--;
-                            } else {
-                              post.like++;
-                            }
-                            post.isLiked = !post.isLiked;
-                          });
-                        },
+                  Expanded(
+                    child: Text(
+                      post.title,
+                      style: TextStyle(
+                        fontSize: 18.0,
+                        fontWeight: FontWeight.bold,
                       ),
-                      Text(post.like.toString()),
-                    ],
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ],
               ),
-            ),
+              SizedBox(height: 8.0),
+              Text(
+                'Posted by ${snapshot.data}',
+                style: TextStyle(
+                  fontSize: 14.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[600],
+                ),
+              ),
+              SizedBox(height: 8.0),
+              Text(
+                post.text,
+                style: TextStyle(fontSize: 16.0),
+              ),
+              SizedBox(height: 12.0),
+              Container(
+                width: MediaQuery.of(context).size.width * 0.6, // Adjust the width factor as desired
+                height: MediaQuery.of(context).size.height * 0.6, // Adjust the height factor as desired
+                child: Image.network(
+                  post.photo,
+                  fit: BoxFit.cover,
+                  loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                    if (loadingProgress == null) {
+                      return child;
+                    }
+                    return Center(
+                      child: CircularProgressIndicator(
+                        value: loadingProgress.expectedTotalBytes != null
+                            ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                            : null,
+                      ),
+                    );
+                  },
+                  errorBuilder: (context, error, stackTrace) {
+                    return Text('Failed to load image.');
+                  },
+                ),
+              ),
+              SizedBox(height: 12.0),
+              Row(
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      post.isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
+                      color: post.isLiked ? Colors.orange : null,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        if (post.isLiked) {
+                          post.like--;
+                        } else {
+                          post.like++;
+                        }
+                        post.isLiked = !post.isLiked;
+                      });
+                    },
+                  ),
+                  Text(post.like.toString()),
+                  Spacer(),
+                  Visibility(
+                    visible: status, // Replace 'status' with your boolean variable
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.delete,
+                        color: Colors.red,
+                      ),
+                      onPressed: () {
+                        deletePost(post.id_post.toString());
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-        );
+        ),
+      ),
+    ),
+  ),
+);
+;
       },
     );
   },
 ),
-
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           // Add navigation to the 'Add Post' screen here
-            Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const AddPostPage()),
-                          );
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const AddPostPage()),
+          );
         },
         child: Icon(Icons.add),
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.orange,
       ),
     );
   }
@@ -403,7 +454,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                 IconButton(
                   icon: Icon(
                     widget.post.isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
-                    color: widget.post.isLiked ? Colors.blue : null,
+                    color: widget.post.isLiked ? Colors.orange : null,
                   ),
                   onPressed: () {
                     setState(() {
@@ -447,7 +498,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                               IconButton(
                                 icon: Icon(
                                   comment.isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
-                                  color: comment.isLiked ? Colors.blue : null,
+                                  color: comment.isLiked ? Colors.orange : null,
                                 ),
                                 onPressed: () {
                                   setState(() {
