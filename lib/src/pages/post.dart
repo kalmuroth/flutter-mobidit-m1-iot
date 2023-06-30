@@ -45,12 +45,6 @@ class _RedditHomePageState extends State<RedditHomePage> {
 
   String selectedCategory = '';
 
-/*   @override
-  void initState() {
-    super.initState();
-    fetchPosts();
-
-  } */
 
     @override
   void initState() {
@@ -163,15 +157,6 @@ Widget build(BuildContext context) {
                   mainAxisAlignment: MainAxisAlignment
                       .spaceEvenly, // for evenly space between buttons
                   children: <Widget>[
-                 /*    ElevatedButton(
-                      onPressed: () {
-                         Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const AddPostPage()),
-                    );
-                      },
-                      child: Text('Add Post'),
-                    ), */
                     ElevatedButton(
                       onPressed: () async {
                         await FirebaseAuth.instance.signOut();
@@ -351,15 +336,16 @@ Widget build(BuildContext context) {
           ),
         ],
       ),
-    floatingActionButton: FutureBuilder<User?>(
-  future: FirebaseAuth.instance.authStateChanges().first,
-  builder: (BuildContext context, AsyncSnapshot<User?> snapshot) {
-    if (snapshot.connectionState == ConnectionState.waiting) {
-      // Show a loading indicator while waiting for authentication state
-      return CircularProgressIndicator();
-    } else if (snapshot.hasData) {
-      // User is logged in, show the floating action button
-      return FloatingActionButton(
+    floatingActionButton: 
+     StreamBuilder<User?>(
+            stream: FirebaseAuth.instance.authStateChanges(),
+            builder: (BuildContext context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Container(); // Return an empty container while waiting for the auth state
+              }
+              final user = snapshot.data;
+              if (user != null) {
+                return FloatingActionButton(
         onPressed: () {
           // Add navigation to the 'Add Post' screen here
           Navigator.push(
@@ -370,12 +356,11 @@ Widget build(BuildContext context) {
         child: Icon(Icons.add),
         backgroundColor: Colors.orange,
       );
-    } else {
-      // User is not logged in, do not show the floating action button
-      return Container();
-    }
-  },
-),
+              } else {
+                return Container();
+              }
+            },
+          ),
 
     );
   }
