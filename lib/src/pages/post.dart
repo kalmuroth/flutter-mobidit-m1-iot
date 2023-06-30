@@ -162,15 +162,6 @@ Widget build(BuildContext context) {
                       onPressed: () {
                          Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const AddPostPage()),
-                        );
-                      },
-                      child: Text('Add Post'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                         Navigator.push(
-                          context,
                           MaterialPageRoute(builder: (context) => const AddCategoryPage()),
                         );
                       },
