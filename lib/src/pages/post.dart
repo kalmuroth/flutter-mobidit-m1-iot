@@ -13,7 +13,6 @@ import '../model/userModel.dart';
 import '../services/dbService.dart';
 import 'package:http/http.dart' as http;
 
-
 class Posts extends StatelessWidget {
   const Posts({super.key});
   static const routeName = '/home';
@@ -35,19 +34,16 @@ class RedditHomePage extends StatefulWidget {
 }
 
 class _RedditHomePageState extends State<RedditHomePage> {
-
   final DatabaseService postService = DatabaseService();
 
   List<Post> posts = [];
   final FirebaseAuth _auth = FirebaseAuth.instance;
-   String idUser = '';
+  String idUser = '';
   bool status = false;
-  
 
   String selectedCategory = '';
 
-
-    @override
+  @override
   void initState() {
     super.initState();
     if (_auth.currentUser != null) {
@@ -58,7 +54,6 @@ class _RedditHomePageState extends State<RedditHomePage> {
     }
     fetchPosts();
     isAdmin();
-
   }
 
   Future<void> fetchPosts() async {
@@ -72,57 +67,57 @@ class _RedditHomePageState extends State<RedditHomePage> {
     }
   }
 
+  Future<String> getUserInfo(String userId) async {
+    final response = await http.get(
+      Uri.parse(
+          'https://europe-west2-flutter-mobidit-m1-iot.cloudfunctions.net/admin-user/$userId'),
+    );
 
-Future<String> getUserInfo(String userId) async {
-  final response = await http.get(
-    Uri.parse('https://europe-west2-flutter-mobidit-m1-iot.cloudfunctions.net/admin-user/$userId'),
-  );
-
-  if (response.statusCode == 200) {
-    Map<String, dynamic> responseBody = jsonDecode(response.body);
-    Map<String, dynamic> keyData = responseBody['keyData'];
-    Users user = Users.fromJson(keyData);
-    return user.speudo; // assuming Users has a pseudo field
-  } else {
-    throw Exception('Failed to load user data');
+    if (response.statusCode == 200) {
+      Map<String, dynamic> responseBody = jsonDecode(response.body);
+      Map<String, dynamic> keyData = responseBody['keyData'];
+      Users user = Users.fromJson(keyData);
+      return user.speudo; // assuming Users has a pseudo field
+    } else {
+      throw Exception('Failed to load user data');
+    }
   }
-}
 
-Future<String?> deletePost(String postId) async {
-  final response = await http.delete(
-    Uri.parse('https://europe-west2-flutter-mobidit-m1-iot.cloudfunctions.net/admin-post/$postId'),
-  );
+  Future<String?> deletePost(String postId) async {
+    final response = await http.delete(
+      Uri.parse(
+          'https://europe-west2-flutter-mobidit-m1-iot.cloudfunctions.net/admin-post/$postId'),
+    );
 
-  if (response.statusCode == 200) {
-    print("Post deleted");
-    await refreshPosts();
-  } else {
-    throw Exception('Failed to delete post');
+    if (response.statusCode == 200) {
+      print("Post deleted");
+      await refreshPosts();
+    } else {
+      throw Exception('Failed to delete post');
+    }
   }
-}
 
-Future<void> refreshPosts() async {
-  await fetchPosts();
-}
+  Future<void> refreshPosts() async {
+    await fetchPosts();
+  }
 
-Future<void> isAdmin() async {
-  try {
-    User? user = await FirebaseAuth.instance.currentUser;
-    String userId = user?.uid ?? '';
-    bool fetchedStatus = await postService.getUserStatus(userId);
-    setState(() {
+  Future<void> isAdmin() async {
+    try {
+      User? user = await FirebaseAuth.instance.currentUser;
+      String userId = user?.uid ?? '';
+      bool fetchedStatus = await postService.getUserStatus(userId);
+      setState(() {
         status = fetchedStatus;
-    });
-  } catch (e) {
-    print('$e');
+      });
+    } catch (e) {
+      print('$e');
+    }
   }
-}
 
-
-@override
-Widget build(BuildContext context) {
-   return Scaffold(
-        appBar: AppBar(
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
         title: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
@@ -160,9 +155,10 @@ Widget build(BuildContext context) {
                   children: <Widget>[
                     ElevatedButton(
                       onPressed: () {
-                         Navigator.push(
+                        Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const AddCategoryPage()),
+                          MaterialPageRoute(
+                              builder: (context) => const AddCategoryPage()),
                         );
                       },
                       child: Text('Add Category'),
@@ -204,212 +200,252 @@ Widget build(BuildContext context) {
                     child: CircularProgressIndicator(),
                   )
                 : ListView.builder(
-    itemCount: posts.length,
-    itemBuilder: (context, index) {
-    Post post = posts[index];
-    if (selectedCategory.isNotEmpty && post.id_category != selectedCategory) {
-      return Container();
-    }
-    return FutureBuilder<String>(
-      future: getUserInfo(post.id_user),
-      builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
-        }
-        return InkWell(
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PostDetailPage(post: post),
-      ),
-    );
-  },
-  child: Align(
-    alignment: Alignment.centerLeft,
-    child: FractionallySizedBox(
-      widthFactor: 0.75, // Set the width factor to 75%
-      child: Card(
-        margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
-        elevation: 4.0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10.0),
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(10.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      post.title,
-                      style: TextStyle(
-                        fontSize: 18.0,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 8.0),
-              Text(
-                'Posted by ${snapshot.data}',
-                style: TextStyle(
-                  fontSize: 14.0,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[600],
-                ),
-              ),
-              SizedBox(height: 8.0),
-              Text(
-                post.text,
-                style: TextStyle(fontSize: 16.0),
-              ),
-              SizedBox(height: 12.0),
-              Container(
-                width: MediaQuery.of(context).size.width * 0.6, // Adjust the width factor as desired
-                height: MediaQuery.of(context).size.height * 0.6, // Adjust the height factor as desired
-                child: Image.network(
-                  post.photo,
-                  fit: BoxFit.cover,
-                  loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-                    if (loadingProgress == null) {
-                      return child;
-                    }
-                    return Center(
-                      child: CircularProgressIndicator(
-                        value: loadingProgress.expectedTotalBytes != null
-                            ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                            : null,
-                      ),
-                    );
-                  },
-                  errorBuilder: (context, error, stackTrace) {
-                    return Text('Failed to load image.');
-                  },
-                ),
-              ),
-              SizedBox(height: 12.0),
-              Row(
-                children: [
-                  IconButton(
-                    icon: Icon(
-                      post.isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
-                      color: post.isLiked ? Colors.orange : null,
-                    ),
-                    onPressed: () async {
-                      if (post.isLiked) {
-                      String id_post = post.id_post; // Replace with actual post id
-
-  
-    Map<String, dynamic> likeData = {
-      "like": post.like-1,
-    };
-
-    // Make a PATCH request to the API
-    var response = await http.post(
-      Uri.parse('https://europe-west2-flutter-mobidit-m1-iot.cloudfunctions.net/admin-post/$id_post'),
-      body: jsonEncode(likeData),
-      headers: {"Content-Type": "application/json"},
-    );
-    //post.isLiked = !post.isLiked;
-
-                        post.like--;
-                             setState(() {
-                        
-                          post.like-1;                      
-                        post.isLiked = !post.isLiked;
-                      });
-
-                      } else {
-                         String id_post = post.id_post; // Replace with actual post id
-
-  
-    Map<String, dynamic> likeData = {
-      "like": post.like+1,
-    };
-
-    // Make a PATCH request to the API
-    var response = await http.post(
-      Uri.parse('https://europe-west2-flutter-mobidit-m1-iot.cloudfunctions.net/admin-post/$id_post'),
-      body: jsonEncode(likeData),
-      headers: {"Content-Type": "application/json"},
-    );
-    post.like++;
-              setState(() {
-                        
-                          post.like+1;                      
-                        post.isLiked = !post.isLiked;
-                      });
-                      
+                    itemCount: posts.length,
+                    itemBuilder: (context, index) {
+                      Post post = posts[index];
+                      if (selectedCategory.isNotEmpty &&
+                          post.id_category != selectedCategory) {
+                        return Container();
                       }
-           
+                      return FutureBuilder<String>(
+                        future: getUserInfo(post.id_user),
+                        builder: (BuildContext context,
+                            AsyncSnapshot<String> snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return Center(child: CircularProgressIndicator());
+                          }
+                          if (snapshot.hasError) {
+                            return Text('Error: ${snapshot.error}');
+                          }
+                          return InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      PostDetailPage(post: post),
+                                ),
+                              );
+                            },
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: FractionallySizedBox(
+                                widthFactor:
+                                    0.75, // Set the width factor to 75%
+                                child: Card(
+                                  margin: EdgeInsets.symmetric(
+                                      vertical: 10.0, horizontal: 20.0),
+                                  elevation: 4.0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                  ),
+                                  child: Padding(
+                                    padding: EdgeInsets.all(10.0),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                post.title,
+                                                style: TextStyle(
+                                                  fontSize: 18.0,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        SizedBox(height: 8.0),
+                                        Text(
+                                          'Posted by ${snapshot.data} At ${post.datePost}',
+                                          style: TextStyle(
+                                            fontSize: 14.0,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.grey[600],
+                                          ),
+                                        ),
+                                        SizedBox(height: 8.0),
+                                        Text(
+                                          post.text,
+                                          style: TextStyle(fontSize: 16.0),
+                                        ),
+                                        SizedBox(height: 12.0),
+                                        Container(
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.6, // Adjust the width factor as desired
+                                          height: MediaQuery.of(context)
+                                                  .size
+                                                  .height *
+                                              0.6, // Adjust the height factor as desired
+                                          child: Image.network(
+                                            post.photo,
+                                            fit: BoxFit.cover,
+                                            loadingBuilder:
+                                                (BuildContext context,
+                                                    Widget child,
+                                                    ImageChunkEvent?
+                                                        loadingProgress) {
+                                              if (loadingProgress == null) {
+                                                return child;
+                                              }
+                                              return Center(
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  value: loadingProgress
+                                                              .expectedTotalBytes !=
+                                                          null
+                                                      ? loadingProgress
+                                                              .cumulativeBytesLoaded /
+                                                          loadingProgress
+                                                              .expectedTotalBytes!
+                                                      : null,
+                                                ),
+                                              );
+                                            },
+                                            errorBuilder:
+                                                (context, error, stackTrace) {
+                                              return Text(
+                                                  'Failed to load image.');
+                                            },
+                                          ),
+                                        ),
+                                        SizedBox(height: 12.0),
+                                        Row(
+                                          children: [
+                                            IconButton(
+                                              icon: Icon(
+                                                post.isLiked
+                                                    ? Icons.thumb_up
+                                                    : Icons.thumb_up_outlined,
+                                                color: post.isLiked
+                                                    ? Colors.orange
+                                                    : null,
+                                              ),
+                                              onPressed: () async {
+                                                if (post.isLiked) {
+                                                  String id_post = post
+                                                      .id_post; // Replace with actual post id
+
+                                                  Map<String, dynamic>
+                                                      likeData = {
+                                                    "like": post.like - 1,
+                                                  };
+
+                                                  // Make a PATCH request to the API
+                                                  var response =
+                                                      await http.post(
+                                                    Uri.parse(
+                                                        'https://europe-west2-flutter-mobidit-m1-iot.cloudfunctions.net/admin-post/$id_post'),
+                                                    body: jsonEncode(likeData),
+                                                    headers: {
+                                                      "Content-Type":
+                                                          "application/json"
+                                                    },
+                                                  );
+                                                  //post.isLiked = !post.isLiked;
+
+                                                  post.like--;
+                                                  setState(() {
+                                                    post.like - 1;
+                                                    post.isLiked =
+                                                        !post.isLiked;
+                                                  });
+                                                } else {
+                                                  String id_post = post
+                                                      .id_post; // Replace with actual post id
+
+                                                  Map<String, dynamic>
+                                                      likeData = {
+                                                    "like": post.like + 1,
+                                                  };
+
+                                                  // Make a PATCH request to the API
+                                                  var response =
+                                                      await http.post(
+                                                    Uri.parse(
+                                                        'https://europe-west2-flutter-mobidit-m1-iot.cloudfunctions.net/admin-post/$id_post'),
+                                                    body: jsonEncode(likeData),
+                                                    headers: {
+                                                      "Content-Type":
+                                                          "application/json"
+                                                    },
+                                                  );
+                                                  post.like++;
+                                                  setState(() {
+                                                    post.like + 1;
+                                                    post.isLiked =
+                                                        !post.isLiked;
+                                                  });
+                                                }
+                                              },
+                                            ),
+                                            Text(post.like.toString()),
+                                            Spacer(),
+                                            Visibility(
+                                              visible: status ||
+                                                  idUser ==
+                                                      post.id_user, // Replace 'status' with your boolean variable
+                                              child: IconButton(
+                                                icon: Icon(
+                                                  Icons.delete,
+                                                  color: Colors.red,
+                                                ),
+                                                onPressed: () {
+                                                  deletePost(
+                                                      post.id_post.toString());
+                                                },
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                          ;
+                        },
+                      );
                     },
                   ),
-                  Text(post.like.toString()),
-                  Spacer(),
-                  Visibility(
-                    visible: status || idUser == post.id_user, // Replace 'status' with your boolean variable
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.delete,
-                        color: Colors.red,
-                      ),
-                      onPressed: () {
-                        deletePost(post.id_post.toString());
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    ),
-  ),
-);
-;
-      },
-    );
-  },
-),
           ),
         ],
       ),
-    floatingActionButton: 
-     StreamBuilder<User?>(
-            stream: FirebaseAuth.instance.authStateChanges(),
-            builder: (BuildContext context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Container(); // Return an empty container while waiting for the auth state
-              }
-              final user = snapshot.data;
-              if (user != null) {
-                return FloatingActionButton(
-        onPressed: () {
-          // Add navigation to the 'Add Post' screen here
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const AddPostPage()),
-          );
+      floatingActionButton: StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (BuildContext context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Container(); // Return an empty container while waiting for the auth state
+          }
+          final user = snapshot.data;
+          if (user != null) {
+            return FloatingActionButton(
+              onPressed: () {
+                // Add navigation to the 'Add Post' screen here
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AddPostPage()),
+                );
+              },
+              child: Icon(Icons.add),
+              backgroundColor: Colors.orange,
+            );
+          } else {
+            return Container();
+          }
         },
-        child: Icon(Icons.add),
-        backgroundColor: Colors.orange,
-      );
-              } else {
-                return Container();
-              }
-            },
-          ),
-
+      ),
     );
   }
 
@@ -421,7 +457,7 @@ Widget build(BuildContext context) {
 
     List<DropdownMenuItem<String>> dropdownItems = [];
     dropdownItems.add(DropdownMenuItem<String>(
-      value: '', 
+      value: '',
       child: Text('All'),
     ));
 
@@ -434,9 +470,7 @@ Widget build(BuildContext context) {
 
     return dropdownItems;
   }
-
 }
-
 
 class PostDetailPage extends StatefulWidget {
   final Post post;
@@ -467,7 +501,6 @@ class _PostDetailPageState extends State<PostDetailPage> {
 
   @override
   void dispose() {
-
     commentController.dispose();
     super.dispose();
   }
@@ -500,7 +533,9 @@ class _PostDetailPageState extends State<PostDetailPage> {
               children: [
                 IconButton(
                   icon: Icon(
-                    widget.post.isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
+                    widget.post.isLiked
+                        ? Icons.thumb_up
+                        : Icons.thumb_up_outlined,
                     color: widget.post.isLiked ? Colors.orange : null,
                   ),
                   onPressed: () {
@@ -544,7 +579,9 @@ class _PostDetailPageState extends State<PostDetailPage> {
                             children: [
                               IconButton(
                                 icon: Icon(
-                                  comment.isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
+                                  comment.isLiked
+                                      ? Icons.thumb_up
+                                      : Icons.thumb_up_outlined,
                                   color: comment.isLiked ? Colors.orange : null,
                                 ),
                                 onPressed: () {

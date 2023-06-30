@@ -10,7 +10,7 @@ class Post {
   List<Comment> comments;
   final String photo;
   bool isLiked;
-
+  String datePost;
 
   Post({
     this.id_post = '',
@@ -22,7 +22,7 @@ class Post {
     this.comments = const [],
     required this.photo,
     this.isLiked = false,
-  
+    required this.datePost,
   });
 
   factory Post.fromJson(Map<String, dynamic> json) {
@@ -33,16 +33,16 @@ class Post {
     if (text == null) {
       text = '';
     }
-   
-    var post =  Post(
+
+    var post = Post(
       id_user: tab['id_user'],
       like: tab['like'],
       title: tab['title'],
-      text: text, 
+      text: text,
       id_category: tab['id_category'],
       id_post: id,
       photo: tab['photo'],
-
+      datePost: tab['datePost'],
     );
 
     return post;
