@@ -69,7 +69,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
                       labelText: 'Email',
                       labelStyle: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
                       focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.blue, width: 2.0),
+                        borderSide: BorderSide(color: Colors.orange, width: 2.0),
                       ),
                     ),
                     validator: (value) {
@@ -92,7 +92,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
                       labelText: 'Password',
                       labelStyle: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
                       focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.blue, width: 2.0),
+                        borderSide: BorderSide(color: Colors.orange, width: 2.0),
                       ),
                     ),
                     obscureText: true,
@@ -116,7 +116,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
                       labelText: 'Confirm Password',
                       labelStyle: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
                       focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.blue, width: 2.0),
+                        borderSide: BorderSide(color: Colors.orange, width: 2.0),
                       ),
                     ),
                     obscureText: true,
@@ -163,7 +163,7 @@ Navigator.push(
 
                   },
                   style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white, backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white, backgroundColor: Colors.orange,
                     textStyle: const TextStyle(fontSize: 18),
                   ),
                   child: const Text('Register'),

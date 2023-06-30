@@ -1,12 +1,16 @@
 class Comment {
+  String id_comment;
   String id_post;
   String content;
   int like;
   bool isLiked;
+  String id_user;
 
   Comment({
+    this.id_comment = '',
     required this.id_post,
     required this.content,
+    required this.id_user,
     this.like = 0,
     this.isLiked = false});
 
@@ -14,9 +18,14 @@ class Comment {
   factory Comment.fromJson(Map<String, dynamic> json) {
     var tab = json;
 
-    var content = tab['content'];
-    if (content == null) {
-      content = '';
+    var id = json;
+    if (id == null) {
+      id = '';
+    }
+
+    var id_user = tab['id_user'];
+    if (id_user == null) {
+      id_user = '';
     }
 
     var like = tab['like'];
@@ -24,10 +33,17 @@ class Comment {
       like = 0;
     }
    
+   var content = tab['content'];
+    if (content == null) {
+      content = '';
+    }
+
     var comment =  Comment(
       id_post: tab['id_post'],
       like: like,
+      id_comment : id,
       content: content, 
+      id_user:tab['id_user']
     );
 
     return comment;

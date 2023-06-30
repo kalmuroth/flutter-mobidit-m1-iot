@@ -68,7 +68,7 @@ class _LoginFormState extends State<LoginForm> {
                       labelStyle:
                           TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
                       focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.blue, width: 2.0),
+                        borderSide: BorderSide(color: Colors.orange, width: 2.0),
                       ),
                     ),
                     validator: (value) {
@@ -92,7 +92,7 @@ class _LoginFormState extends State<LoginForm> {
                       labelStyle:
                           TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
                       focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.blue, width: 2.0),
+                        borderSide: BorderSide(color: Colors.orange, width: 2.0),
                       ),
                     ),
                     obscureText: true,
@@ -155,7 +155,7 @@ class _LoginFormState extends State<LoginForm> {
                   },
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.white,
-                    backgroundColor: Colors.blue,
+                    backgroundColor: Colors.orange,
                     textStyle: const TextStyle(fontSize: 18),
                   ),
                   child: const Text('Login'),
