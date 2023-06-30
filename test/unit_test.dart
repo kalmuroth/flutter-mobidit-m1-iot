@@ -39,7 +39,7 @@ void main() {
   test('Test getAllComment', () async {
 
     final databaseService = DatabaseService();
-    String id = 'qLNljG38Ceck94L3ysc4';
+    String id = 'post_123';
 
     final comments = await databaseService.getAllComment(id);
 
@@ -47,14 +47,13 @@ void main() {
 
   });
 
-  /*test('Update comment', () async {
-    final comment = Comment(
-      id_post: 'post_123',
-      content: 'New comment content',
-      like: 0,
-    );
+  test('Test getUserStatus', () async {
+    final databaseService = DatabaseService();
 
-    await updateComment(comment);
+    final userId = 'aMFrD6baIgOewuFALz4RFbjTZIS2';
 
-  });*/
+    final status = await databaseService.getUserStatus(userId);
+
+    expect(status, true);
+  });
 }
