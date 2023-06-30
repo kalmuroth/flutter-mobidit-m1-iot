@@ -264,7 +264,7 @@ Widget build(BuildContext context) {
               ),
               SizedBox(height: 8.0),
               Text(
-                'Posted by ${snapshot.data}',
+                'Posted by ${snapshot.data} at ${post.datePost}',
                 style: TextStyle(
                   fontSize: 14.0,
                   fontWeight: FontWeight.bold,
