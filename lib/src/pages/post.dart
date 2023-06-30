@@ -163,7 +163,7 @@ Widget build(BuildContext context) {
                   mainAxisAlignment: MainAxisAlignment
                       .spaceEvenly, // for evenly space between buttons
                   children: <Widget>[
-                    ElevatedButton(
+                 /*    ElevatedButton(
                       onPressed: () {
                          Navigator.push(
                       context,
@@ -171,7 +171,7 @@ Widget build(BuildContext context) {
                     );
                       },
                       child: Text('Add Post'),
-                    ),
+                    ), */
                     ElevatedButton(
                       onPressed: () async {
                         await FirebaseAuth.instance.signOut();
@@ -351,18 +351,32 @@ Widget build(BuildContext context) {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+    floatingActionButton: FutureBuilder<User?>(
+  future: FirebaseAuth.instance.authStateChanges().first,
+  builder: (BuildContext context, AsyncSnapshot<User?> snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      // Show a loading indicator while waiting for authentication state
+      return CircularProgressIndicator();
+    } else if (snapshot.hasData) {
+      // User is logged in, show the floating action button
+      return FloatingActionButton(
         onPressed: () {
           // Add navigation to the 'Add Post' screen here
           Navigator.push(
             context,
-            MaterialPageRoute(
-                builder: (context) => const AddPostPage()),
+            MaterialPageRoute(builder: (context) => const AddPostPage()),
           );
         },
         child: Icon(Icons.add),
         backgroundColor: Colors.orange,
-      ),
+      );
+    } else {
+      // User is not logged in, do not show the floating action button
+      return Container();
+    }
+  },
+),
+
     );
   }
 
