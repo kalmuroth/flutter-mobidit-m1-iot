@@ -304,15 +304,53 @@ Widget build(BuildContext context) {
                       post.isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
                       color: post.isLiked ? Colors.orange : null,
                     ),
-                    onPressed: () {
-                      setState(() {
-                        if (post.isLiked) {
-                          post.like--;
-                        } else {
-                          post.like++;
-                        }
+                    onPressed: () async {
+                      if (post.isLiked) {
+                      String id_post = post.id_post; // Replace with actual post id
+
+  
+    Map<String, dynamic> likeData = {
+      "like": post.like-1,
+    };
+
+    // Make a PATCH request to the API
+    var response = await http.post(
+      Uri.parse('https://europe-west2-flutter-mobidit-m1-iot.cloudfunctions.net/admin-post/$id_post'),
+      body: jsonEncode(likeData),
+      headers: {"Content-Type": "application/json"},
+    );
+    //post.isLiked = !post.isLiked;
+
+                        post.like--;
+                             setState(() {
+                        
+                          post.like-1;                      
                         post.isLiked = !post.isLiked;
                       });
+
+                      } else {
+                         String id_post = post.id_post; // Replace with actual post id
+
+  
+    Map<String, dynamic> likeData = {
+      "like": post.like+1,
+    };
+
+    // Make a PATCH request to the API
+    var response = await http.post(
+      Uri.parse('https://europe-west2-flutter-mobidit-m1-iot.cloudfunctions.net/admin-post/$id_post'),
+      body: jsonEncode(likeData),
+      headers: {"Content-Type": "application/json"},
+    );
+    post.like++;
+              setState(() {
+                        
+                          post.like+1;                      
+                        post.isLiked = !post.isLiked;
+                      });
+                      
+                      }
+           
                     },
                   ),
                   Text(post.like.toString()),
