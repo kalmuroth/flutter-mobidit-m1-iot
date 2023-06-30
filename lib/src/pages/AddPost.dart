@@ -11,6 +11,8 @@ import 'dart:typed_data'; // Needed for Uint8List
 import 'package:flutter/material.dart';
 import '../model/postModel.dart';
 import '../services/dbService.dart';
+import 'package:intl/intl.dart';
+
 
 class AddPostPage extends StatefulWidget {
   const AddPostPage({Key? key}) : super(key: key);
@@ -98,7 +100,8 @@ class _AddPostPageState extends State<AddPostPage> {
       String photo, String idUser, num like) async {
     final url =
         'https://europe-west2-flutter-mobidit-m1-iot.cloudfunctions.net/admin-post';
-    final datePost = DateTime.now().toString();
+    final datePost = DateTime.now();
+    String formattedDate = DateFormat('yyyy-MM-dd HH:mm').format(datePost);
     final response = await http.post(
       Uri.parse(url),
       headers: {"Content-Type": "application/json"},
@@ -109,7 +112,7 @@ class _AddPostPageState extends State<AddPostPage> {
         'photo': photo,
         'id_user': idUser,
         'like': NbLikes,
-        'datePost': datePost,
+        'datePost': formattedDate,
       }),
     );
 
