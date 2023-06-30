@@ -40,7 +40,7 @@ class _RedditHomePageState extends State<RedditHomePage> {
 
   List<Post> posts = [];
   final FirebaseAuth _auth = FirebaseAuth.instance;
-   String idUser = '';
+  String idUser = '';
   bool status = false;
   
 
@@ -170,6 +170,10 @@ Widget build(BuildContext context) {
                     ElevatedButton(
                       onPressed: () async {
                         await FirebaseAuth.instance.signOut();
+                        setState(() {
+                          status = false; // Reset the status state
+                          idUser = ''; // Reset the idUser state
+                        });
                       },
                       child: Text('Logout'),
                     ),
@@ -449,15 +453,23 @@ class PostDetailPage extends StatefulWidget {
 
 class _PostDetailPageState extends State<PostDetailPage> {
   Post get post => widget.post;
-
+  String idUser = '';
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final DatabaseService postService = DatabaseService();
   final DatabaseService service = DatabaseService();
-  Comment tmp = Comment(id_post: '', content: '');
+  Comment tmp = Comment(id_post: '', content: '', id_user:'');
   final TextEditingController commentController = TextEditingController();
   List<Comment> comments = [];
+  bool status = false;
 
   @override
   void initState() {
     super.initState();
+    if (_auth.currentUser != null) {
+      idUser = _auth.currentUser!.uid; // Here you get the uid of the current user
+    } else {
+      // handle case where no user is signed in.
+    }
     comments = post.comments;
   }
 
@@ -467,10 +479,34 @@ class _PostDetailPageState extends State<PostDetailPage> {
 
   @override
   void dispose() {
-
     commentController.dispose();
     super.dispose();
   }
+
+  Future<void> isAdmin() async {
+  try {
+    User? user = await FirebaseAuth.instance.currentUser;
+    String userId = user?.uid ?? '';
+    bool fetchedStatus = await postService.getUserStatus(userId);
+    setState(() {
+        status = fetchedStatus;
+    });
+  } catch (e) {
+    print('$e');
+  }
+}
+
+  Future<String?> deleteComment(String commentId) async {
+  final response = await http.delete(
+    Uri.parse('https://europe-west2-flutter-mobidit-m1-iot.cloudfunctions.net/admin-comment/$commentId'),
+  );
+
+  if (response.statusCode == 200) {
+    print("Comment deleted");
+  } else {
+    throw Exception('Failed to delete comment');
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -541,26 +577,41 @@ class _PostDetailPageState extends State<PostDetailPage> {
                           SizedBox(height: 4.0),
                           Text(comment.content),
                           Row(
-                            children: [
-                              IconButton(
-                                icon: Icon(
-                                  comment.isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
-                                  color: comment.isLiked ? Colors.orange : null,
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    if (comment.isLiked) {
-                                      comment.like--;
-                                    } else {
-                                      comment.like++;
-                                    }
-                                    comment.isLiked = !comment.isLiked;
-                                  });
-                                },
-                              ),
-                              Text(comment.like.toString()),
-                            ],
+                        children: [
+                          IconButton(
+                            icon: Icon(
+                              comment.isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
+                              color: comment.isLiked ? Colors.orange : null,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                if (comment.isLiked) {
+                                  comment.like--;
+                                } else {
+                                  comment.like++;
+                                }
+                                comment.isLiked = !comment.isLiked;
+                              });
+                            },
                           ),
+                          Text(comment.like.toString()),
+                          Spacer(), // Add Spacer widget to occupy the available space
+                          Visibility(
+                            visible: status || idUser == comment.id_user, // Replace 'status' with your boolean variable
+                            child: IconButton(
+                              icon: Icon(
+                                Icons.delete,
+                                color: Colors.red,
+                              ),
+                              onPressed: () {
+                                print("coucou " + comment.id_comment.toString());
+                                deleteComment(comment.id_comment.toString());
+                              },
+                            ),
+                          ),
+                        ],
+                      )
+                      ,
                         ],
                       ),
                     ),
@@ -583,6 +634,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                   tmp = Comment(
                     id_post: post.id_post,
                     content: commentController.text,
+                    id_user: idUser,
                   );
                   comments.add(tmp);
                   commentController.clear();

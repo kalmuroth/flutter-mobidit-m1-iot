@@ -78,6 +78,7 @@ class DatabaseService {
         body: {
           'id_post': comment.id_post,
           'content': comment.content,
+          'id_user': comment.id_user,
           //'like': 0,
         },
       );
